@@ -50,35 +50,10 @@
             <version>2.1</version>
         </dependency>
 
-        <!-- Runtime -->
-        <dependency>
-            <groupId>com.mycila</groupId>
-            <artifactId>mycila-jdbc</artifactId>
-            <version>1.3.ga</version>
-        </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.5</version>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.6</version>
-        </dependency>
-
-        <!-- Optional - DI -->
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>3.0</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-jndi</artifactId>
-            <version>3.0</version>
-            <optional>true</optional>
         </dependency>
 
         <!-- Testing -->
@@ -95,33 +70,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mycila</groupId>
-            <artifactId>mycila-junit</artifactId>
-            <version>1.0.ga</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.mycila</groupId>
-            <artifactId>mycila-guice</artifactId>
-            <version>2.0.ga</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
             <version>1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.ovea.tadjin.module</groupId>
-            <artifactId>tadjin-sql-test</artifactId>
-            <version>1.2.ga</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

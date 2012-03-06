@@ -1,11 +1,6 @@
 package graph;
 
 import com.hp.hpl.jena.rdf.model.*;
-
-import static com.hp.hpl.jena.vocabulary.RDFS.*;
-
-import com.hp.hpl.jena.rdf.model.impl.BagImpl;
-import com.mycila.jdbc.query.Sql;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,21 +10,16 @@ import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
 
-import java.util.List;
-
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static com.hp.hpl.jena.vocabulary.RDFS.label;
+import static junit.framework.Assert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-
 import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
-
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator.*;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator.jenaEdgeManipulatorWithJenaGraphManipulator;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator.jenaGraphManipulatorWithDefaultUser;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator.jenaVertexManipulatorWithJenaGraphManipulator;
 
 /**
  * @author Vincent Blouin
