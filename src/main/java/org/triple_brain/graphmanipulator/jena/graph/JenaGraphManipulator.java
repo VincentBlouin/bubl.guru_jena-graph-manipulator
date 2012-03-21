@@ -1,19 +1,15 @@
 package org.triple_brain.graphmanipulator.jena.graph;
 
-import com.hp.hpl.jena.rdf.arp.NTriple;
 import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.triple_brain.graphmanipulator.jena.User;
 import org.triple_brain.graphmanipulator.jena.graph.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
-import org.triple_brain.graphmanipulator.jena.User;
 
-import java.io.*;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.jar.Attributes;
 
-import static com.hp.hpl.jena.vocabulary.RDFS.*;
-
+import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
 
 /**
