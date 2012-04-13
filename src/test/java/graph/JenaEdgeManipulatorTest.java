@@ -1,119 +1,113 @@
 package graph;
 
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.SimpleSelector;
-import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import graph.mock.JenaGraphManipulatorMock;
 import org.junit.Before;
 import org.junit.Test;
+import org.triple_brain.graphmanipulator.jena.graph.JenaEdge;
 import org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
+import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.Vertex;
 
-import java.util.List;
-
-import static com.hp.hpl.jena.vocabulary.RDFS.label;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator.jenaVertexManipulatorWithJenaGraphManipulator;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator.*;
+import static org.junit.Assert.assertFalse;
 
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
 public class JenaEdgeManipulatorTest {
 
-    private JenaEdgeManipulator jenaEdgeManipulator;
+    private JenaEdgeManipulator edgeManipulator;
+    JenaGraphManipulatorMock graphManipulator;
     private JenaVertexManipulator jenaVertexManipulator;
-    private Resource defaultCenterVertex;
-    private Resource middleVertex;
-    private Resource endVertex;
+    private Vertex defaultCenterVertex;
+    private Vertex middleVertex;
+    private Vertex endVertex;
 
     @Before
     public void setUp() {
-        JenaGraphManipulator jenaGraphManipulator = JenaGraphManipulator.jenaGraphManipulatorWithDefaultUser();
-        jenaVertexManipulator = jenaVertexManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
-        jenaEdgeManipulator = jenaEdgeManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
+        graphManipulator = JenaGraphManipulatorMock.jenaGraphManipulatorWithDefaultUser();
+        jenaVertexManipulator = JenaVertexManipulator.withJenaGraphManipulator(graphManipulator);
+        edgeManipulator = JenaEdgeManipulator.withJenaGraphManipulator(graphManipulator);
         //creating graph defaultCenterVertexId -> secondVertexId -> thirdVertexId
-        defaultCenterVertex = jenaVertexManipulator.graph().listSubjects().nextResource();
+        defaultCenterVertex = graphManipulator.defaultCenterVertex();
 
-        middleVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.getLocalName()).getObject().asResource();
-        endVertex = jenaVertexManipulator.addVertexAndRelation(middleVertex.getLocalName()).getObject().asResource();
+        middleVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
+        endVertex = jenaVertexManipulator.addVertexAndRelation(middleVertex.id()).destinationVertex();
     }
 
     @Test
     public void can_add_relation() {
-        Resource secondVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.getLocalName()).getObject().asResource();
-        Resource thirdVertex = jenaVertexManipulator.addVertexAndRelation(secondVertex.getLocalName()).getObject().asResource();
+        Vertex secondVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
+        Vertex thirdVertex = jenaVertexManipulator.addVertexAndRelation(secondVertex.id()).destinationVertex();
 
-        Integer numberOfEdgesAndVertices = jenaEdgeManipulator.graph().listSubjects().toList().size();
-        Statement newRelation = jenaEdgeManipulator.addRelationBetweenVertices(thirdVertex.getLocalName(), defaultCenterVertex.getLocalName());
+        Integer numberOfEdgesAndVertices = edgeManipulator.graph().listSubjects().toList().size();
+        Edge newEdge = edgeManipulator.addRelationBetweenVertices(
+                thirdVertex.id(),
+                defaultCenterVertex.id()
+        );
 
-        assertThat(newRelation.getSubject().getURI(), is(thirdVertex.getURI()));
-        assertThat(newRelation.getObject().asResource().getURI(), is(defaultCenterVertex.getURI()));
-        assertTrue(jenaEdgeManipulator.graph().contains(newRelation));
-        String edgeName = newRelation.getPredicate().asResource().getProperty(label).getLiteral().getString();
-        assertThat(edgeName, is(""));
-        assertThat(jenaEdgeManipulator.graph().listSubjects().toList().size(), is(numberOfEdgesAndVertices + 1));
+        assertThat(newEdge.sourceVertex(), is(thirdVertex));
+        assertThat(newEdge.destinationVertex(), is(defaultCenterVertex));
+        assertTrue(graphManipulator.containsElement(newEdge));
+        assertThat(newEdge.label(), is(""));
+        assertThat(graphManipulator.numberOfEdgesAndVertices(), is(numberOfEdgesAndVertices + 1));
     }
 
     @Test
     public void add_relation_with_non_existent_source_or_destination_throws_an_error() {
-        Integer numberOfEdgesAndVertices = jenaEdgeManipulator.graph().listSubjects().toList().size();
+        Integer numberOfEdgesAndVertices = edgeManipulator.graph().listSubjects().toList().size();
         try {
-            jenaEdgeManipulator.addRelationBetweenVertices(defaultCenterVertex.getLocalName(), "invalid_URI");
+            edgeManipulator.addRelationBetweenVertices(defaultCenterVertex.id(), "invalid_URI");
             fail();
         } catch (NonExistingResourceException e) {
-            assertThat(e.getMessage(), is("Resource with URI :" + jenaEdgeManipulator.defaultUser().URI() + "invalid_URI not found"));
+            assertThat(e.getMessage(), is("Resource with URI: invalid_URI not found"));
         }
         try {
-            jenaEdgeManipulator.addRelationBetweenVertices("invalid_URI", defaultCenterVertex.getLocalName());
+            edgeManipulator.addRelationBetweenVertices("invalid_URI", defaultCenterVertex.id());
             fail();
         } catch (NonExistingResourceException e) {
-            assertThat(e.getMessage(), is("Resource with URI :" + jenaEdgeManipulator.defaultUser().URI() + "invalid_URI not found"));
+            assertThat(e.getMessage(), is("Resource with URI: invalid_URI not found"));
         }
-        assertThat(jenaEdgeManipulator.graph().listSubjects().toList().size(), is(numberOfEdgesAndVertices));
+        assertThat(edgeManipulator.graph().listSubjects().toList().size(), is(numberOfEdgesAndVertices));
     }
 
     @Test
     public void can_remove_an_edge() {
-        Integer numberOfEdgesAndVertices = jenaEdgeManipulator.graph().listSubjects().toList().size();
+        Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Edge edge = defaultCenterVertex.edgeThatLinksToDestinationVertex(middleVertex);
+        assertTrue(graphManipulator.containsElement(edge));
+        edgeManipulator.removeEdge(edge.id());
+        assertFalse(graphManipulator.containsElement(edge));
+        assertFalse(defaultCenterVertex.hasDestinationVertex(middleVertex));
 
-        Statement statementWhereSubjectIsCenterVertexAndObjectIsMiddleVertex = jenaEdgeManipulator.graph().listStatements(new SimpleSelector(defaultCenterVertex, null, middleVertex)).toList().get(0);
-        Resource edge = statementWhereSubjectIsCenterVertexAndObjectIsMiddleVertex.getPredicate();
-        assertTrue(jenaEdgeManipulator.graph().containsResource(edge));
-        jenaEdgeManipulator.removeEdge(edge.getLocalName());
-        assertFalse(jenaEdgeManipulator.graph().containsResource(edge));
-        List<Statement> statementsWhereSubjectIsCenterVertexAndObjectIsMiddleVertex = jenaEdgeManipulator.graph().listStatements(new SimpleSelector(defaultCenterVertex, null, middleVertex)).toList();
-        assertThat(statementsWhereSubjectIsCenterVertexAndObjectIsMiddleVertex.size(), is(0));
-
-        Integer updatedNumberOfEdgesAndVertices = jenaEdgeManipulator.graph().listSubjects().toList().size();
+        Integer updatedNumberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
         assertThat(updatedNumberOfEdgesAndVertices, is(numberOfEdgesAndVertices - 1));
     }
 
     @Test
     public void remove_relation_with_non_existent_edge_throws_an_error() {
-        Integer numberOfEdgesAndVertices = jenaEdgeManipulator.graph().listSubjects().toList().size();
+        Integer numberOfEdgesAndVertices = edgeManipulator.graph().listSubjects().toList().size();
         try {
-            jenaEdgeManipulator.removeEdge("invalid_URI");
+            edgeManipulator.removeEdge(JenaEdge.withResource(
+                    ModelFactory.createDefaultModel().createResource("http://example.org/other")
+            ).id());
             fail();
         } catch (NonExistingResourceException e) {
-            assertThat(e.getMessage(), is("Resource with URI :" + jenaEdgeManipulator.defaultUser().URI() + "invalid_URI not found"));
+            assertThat(e.getMessage(), is("Resource with URI: http://example.org/other not found"));
         }
-
-        assertThat(jenaEdgeManipulator.graph().listSubjects().toList().size(), is(numberOfEdgesAndVertices));
+        assertThat(edgeManipulator.graph().listSubjects().toList().size(), is(numberOfEdgesAndVertices));
     }
 
     @Test
     public void can_update_label() {
-        Statement newStatement = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.getLocalName());
-        Resource edge = newStatement.getPredicate();
-        jenaEdgeManipulator.updateLabel(edge.getLocalName(), "likes");
-        edge = jenaEdgeManipulator.graph().getResource(edge.getURI());
-        String edgeLabel = edge.getProperty(label).getLiteral().toString();
-        assertThat(edgeLabel, is("likes"));
+        Edge edge = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id());
+        edgeManipulator.updateLabel(edge.id(), "likes");
+        assertThat(edge.label(), is("likes"));
     }
 }

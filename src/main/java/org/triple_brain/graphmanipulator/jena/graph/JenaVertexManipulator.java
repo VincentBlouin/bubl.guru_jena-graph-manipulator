@@ -1,75 +1,79 @@
 package org.triple_brain.graphmanipulator.jena.graph;
 
-import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 import org.triple_brain.graphmanipulator.jena.User;
-import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
+import org.triple_brain.module.graph_manipulator.VertexManipulator;
+import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.Vertex;
 
-import static com.hp.hpl.jena.vocabulary.RDF.*;
-import static com.hp.hpl.jena.vocabulary.OWL2.*;
-import static com.hp.hpl.jena.vocabulary.RDFS.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.*;
+import static com.hp.hpl.jena.vocabulary.OWL2.sameAs;
+import static com.hp.hpl.jena.vocabulary.RDF.type;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.jenaGraphElementManipulatorWithJenaGraphManipulator;
 
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
-public class JenaVertexManipulator{
+public class JenaVertexManipulator implements VertexManipulator{
 
     private JenaGraphManipulator jenaGraphManipulator;
+    private JenaEdgeManipulator jenaEdgeManipulator;
     private JenaGraphElementManipulator jenaGraphElementManipulator;
 
-    public static JenaVertexManipulator jenaVertexManipulatorWithJenaGraphManipulator(JenaGraphManipulator jenaGraphManipulator){
+    public static JenaVertexManipulator withJenaGraphManipulator(JenaGraphManipulator jenaGraphManipulator){
         return new JenaVertexManipulator(jenaGraphManipulator);
     }
 
-    private JenaVertexManipulator(JenaGraphManipulator jenaGraphManipulator){
+    protected JenaVertexManipulator(JenaGraphManipulator jenaGraphManipulator){
         this.jenaGraphManipulator = jenaGraphManipulator;
         jenaGraphElementManipulator = jenaGraphElementManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
+        jenaEdgeManipulator = JenaEdgeManipulator.withJenaGraphManipulator(jenaGraphManipulator);
     }
 
-    public Statement addVertexAndRelation(String sourceVertexLocalName) throws NonExistingResourceException {
-        Resource subjectResource = graph().getResource(defaultUser().URI() + sourceVertexLocalName);
+    public Edge addVertexAndRelation(String sourceVertexURI) throws NonExistingResourceException {
+        Resource subjectResource = graph().getResource(sourceVertexURI);
+        Vertex sourceVertex = JenaVertex.withResource(subjectResource);
         if (!graph().containsResource(subjectResource)) {
-            throw new NonExistingResourceException(defaultUser().URI() + sourceVertexLocalName);
+            throw new NonExistingResourceException(sourceVertexURI);
         }
+
+        String newVertexURI = defaultUser().URI() + defaultUser().nextId();
+        JenaVertex newVertex = JenaVertex.withModelAndURI(defaultUser().model(), newVertexURI);
 
         String edgeURI = defaultUser().URI() + defaultUser().nextId();
-        Resource newEdge = defaultUser().model().createProperty(edgeURI);
-        newEdge.addLiteral(label, "");
+        JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(defaultUser().model(), edgeURI, newVertex);
 
-        String objectVertexURI = defaultUser().URI() + defaultUser().nextId();
-        Resource newVertex = defaultUser().model().createResource(objectVertexURI);
-        newVertex.addLiteral(label, "");
+        sourceVertex.addOutgoingEdge(edge);
 
-        subjectResource.addProperty((Property) newEdge, (RDFNode) newVertex);
-        return defaultUser().model().listStatements(new SimpleSelector(subjectResource, (Property) newEdge, (RDFNode) newVertex)).nextStatement();
+        newVertex.addNeighbor(sourceVertex);
+        sourceVertex.addNeighbor(newVertex);
+
+        return edge;
     }
 
-    public JenaVertexManipulator removeVertex(String vertexLocalName) {
-        Resource vertex = defaultUser().model().getResource(defaultUser().URI() + vertexLocalName);
-        if (!graph().containsResource(vertex)) {
-            throw new NonExistingResourceException(defaultUser().URI() + vertexLocalName);
+    public JenaVertexManipulator removeVertex(String vertexURI) {
+        Resource vertexResource = defaultUser().model().getResource(vertexURI);
+        if (!graph().containsResource(vertexResource)) {
+            throw new NonExistingResourceException(vertexURI);
         }
-
-        for (Statement statement : graph().listStatements(new SimpleSelector(null, null, vertex)).toList()) {
-            graph().remove(statement);
-            statement.getPredicate().removeProperties();
+        JenaVertex vertex = JenaVertex.withResource(vertexResource);
+        for(Edge edge : vertex.connectedEdges()){
+            jenaEdgeManipulator.removeEdge(edge.id());
         }
-        for (Statement statement : vertex.listProperties().toList()) {
-            graph().remove(statement);
-            statement.getPredicate().removeProperties();
-        }
+        vertexResource.removeProperties();
         return this;
     }
 
-    public JenaVertexManipulator updateLabel(String vertexLocalName, String newLabel) throws NonExistingResourceException{
-        jenaGraphElementManipulator.updateLabel(vertexLocalName, newLabel);
+    public JenaVertexManipulator updateLabel(String vertexURI, String newLabel) throws NonExistingResourceException{
+        jenaGraphElementManipulator.updateLabel(vertexURI, newLabel);
         return this;
     }
 
-    public JenaVertexManipulator semanticType(String vertexLocalName, String typeUri){
-        Resource vertex = defaultUser().model().getResource(defaultUser().URI() + vertexLocalName);
+    public JenaVertexManipulator semanticType(String vertexURI, String typeUri){
+        Resource vertex = defaultUser().model().getResource(vertexURI);
         if (!graph().containsResource(vertex)) {
-            throw new NonExistingResourceException(defaultUser().URI() + vertexLocalName);
+            throw new NonExistingResourceException(vertexURI);
         }
         Resource typeAsResource = graph().createResource(typeUri);
         vertex.addProperty(type, typeAsResource);

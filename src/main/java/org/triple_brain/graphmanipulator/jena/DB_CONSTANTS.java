@@ -1,7 +1,7 @@
 package org.triple_brain.graphmanipulator.jena;
 
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
 public class DB_CONSTANTS {
 

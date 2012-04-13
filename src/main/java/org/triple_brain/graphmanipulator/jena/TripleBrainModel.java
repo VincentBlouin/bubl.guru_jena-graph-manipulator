@@ -3,42 +3,52 @@ package org.triple_brain.graphmanipulator.jena;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
 public class TripleBrainModel {
-    public static final String SITE_URI = "http://triple_brain.org/";
+    private static Model model;
+    public static final String SITE_URI = "http://www.triple_brain.org/";
     public static final String EMPTY_EDGE_LABEL = "a property";
     public static final String EMPTY_VERTEX_LABEL = "a concept";
-    public static final String IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES_URI = SITE_URI + "is_frontier_vertex_with_hidden_vertices";
-    private static Model model;
-    private static Property IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES;
+
     private static final String MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX_URI = SITE_URI + "min_number_of_edges_from_center_vertex";
     private static Property MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX;
-    private static final String NUMBER_OF_HIDDEN_CONNECTED_VERTICES_URI = SITE_URI + "number_of_hidden_connected_vertices";
-    private static Property NUMBER_OF_HIDDEN_CONNECTED_VERTICES;
-    private static final String NAME_OF_HIDDEN_PROPERTIES_URI = SITE_URI + "name_of_hidden_properties";
-    private static Property NAME_OF_HIDDEN_PROPERTIES;
+
+    private static final String LABEL_OF_HIDDEN_EDGES_URI = SITE_URI + "label_of_hidden_edges";
+    private static Property LABEL_OF_HIDDEN_EDGES;
+
+    private static String TRIPLE_BRAIN_VERTEX_URI = SITE_URI + "vertex";
+    private static Resource TRIPLE_BRAIN_VERTEX;
+
+    private static final String DESTINATION_VERTEX_URI = SITE_URI + "destination_vertex";
+    private static Property DESTINATION_VERTEX;
+
+    private static final String HAS_OUTGOING_EDGE_URI = SITE_URI + "has_outgoing_edge";
+    private static Property HAS_OUTGOING_EDGE;
+
+    private static String TRIPLE_BRAIN_EDGE_URI = SITE_URI + "edge";
+    private static Resource TRIPLE_BRAIN_EDGE;
+
+    private static final String HAS_NEIGHBOR_URI = SITE_URI + "has_neighbor";
+    private static Property HAS_NEIGHBOR;
 
 
 
     private static Model tripleBrainModel() {
         if (model == null) {
             model = ModelFactory.createDefaultModel();
-            IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES = model.createProperty(IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES_URI);
             MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX = model.createProperty(MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX_URI);
-            NUMBER_OF_HIDDEN_CONNECTED_VERTICES = model.createProperty(NUMBER_OF_HIDDEN_CONNECTED_VERTICES_URI);
-            NAME_OF_HIDDEN_PROPERTIES = model.createProperty(NAME_OF_HIDDEN_PROPERTIES_URI);
+            LABEL_OF_HIDDEN_EDGES = model.createProperty(LABEL_OF_HIDDEN_EDGES_URI);
+            TRIPLE_BRAIN_VERTEX = model.createResource(TRIPLE_BRAIN_VERTEX_URI);
+            HAS_OUTGOING_EDGE = model.createProperty(HAS_OUTGOING_EDGE_URI);
+            TRIPLE_BRAIN_EDGE = model.createResource(TRIPLE_BRAIN_EDGE_URI);
+            DESTINATION_VERTEX = model.createProperty(DESTINATION_VERTEX_URI);
+            HAS_NEIGHBOR = model.createProperty(HAS_NEIGHBOR_URI);
         }
         return model;
-    }
-
-    public static Property IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES() {
-        if (IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES == null) {
-            IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES = tripleBrainModel().getProperty(IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES_URI);
-        }
-        return IS_FRONTIER_VERTEX_WITH_HIDDEN_VERTICES;
     }
 
     public static Property MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX() {
@@ -48,21 +58,45 @@ public class TripleBrainModel {
         return MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX;
     }
 
-    public static Property NUMBER_OF_HIDDEN_CONNECTED_VERTICES() {
-        if (NUMBER_OF_HIDDEN_CONNECTED_VERTICES == null) {
-            NUMBER_OF_HIDDEN_CONNECTED_VERTICES = tripleBrainModel().getProperty(NUMBER_OF_HIDDEN_CONNECTED_VERTICES_URI);
+    public static Property LABEL_OF_HIDDEN_EDGES() {
+        if (LABEL_OF_HIDDEN_EDGES == null) {
+            LABEL_OF_HIDDEN_EDGES = tripleBrainModel().getProperty(LABEL_OF_HIDDEN_EDGES_URI);
         }
-        return NUMBER_OF_HIDDEN_CONNECTED_VERTICES;
+        return LABEL_OF_HIDDEN_EDGES;
     }
 
-    public static Property NAME_OF_HIDDEN_PROPERTIES() {
-        if (NAME_OF_HIDDEN_PROPERTIES == null) {
-            NAME_OF_HIDDEN_PROPERTIES = tripleBrainModel().getProperty(NAME_OF_HIDDEN_PROPERTIES_URI);
+    public static Resource TRIPLE_BRAIN_VERTEX() {
+        if (TRIPLE_BRAIN_VERTEX == null) {
+            TRIPLE_BRAIN_VERTEX = tripleBrainModel().getResource(TRIPLE_BRAIN_VERTEX_URI);
         }
-        return NAME_OF_HIDDEN_PROPERTIES;
+        return TRIPLE_BRAIN_VERTEX;
     }
 
+    public static Property HAS_OUTGOING_EDGE() {
+        if (HAS_OUTGOING_EDGE == null) {
+            HAS_OUTGOING_EDGE = tripleBrainModel().getProperty(HAS_OUTGOING_EDGE_URI);
+        }
+        return HAS_OUTGOING_EDGE;
+    }
 
+    public static Resource TRIPLE_BRAIN_EDGE() {
+        if (TRIPLE_BRAIN_EDGE == null) {
+            TRIPLE_BRAIN_EDGE = tripleBrainModel().getResource(TRIPLE_BRAIN_EDGE_URI);
+        }
+        return TRIPLE_BRAIN_EDGE;
+    }
 
+    public static Property DESTINATION_VERTEX() {
+        if (DESTINATION_VERTEX == null) {
+            DESTINATION_VERTEX = tripleBrainModel().getProperty(DESTINATION_VERTEX_URI);
+        }
+        return DESTINATION_VERTEX;
+    }
 
+    public static Property HAS_NEIGHBOR() {
+        if (HAS_NEIGHBOR == null) {
+            HAS_NEIGHBOR = tripleBrainModel().getProperty(HAS_NEIGHBOR_URI);
+        }
+        return HAS_NEIGHBOR;
+    }
 }

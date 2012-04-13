@@ -1,52 +1,46 @@
 package graph;
 
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
+import graph.mock.JenaGraphManipulatorMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
+import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.Vertex;
 
-import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator.jenaVertexManipulatorWithJenaGraphManipulator;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.jenaGraphElementManipulatorWithJenaGraphManipulator;
+import static org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator.withJenaGraphManipulator;
 
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
 public class JenaGraphElementManipulatorTest {
 
     private JenaGraphElementManipulator jenaGraphElementManipulator;
     private JenaVertexManipulator jenaVertexManipulator;
-    private Resource defaultCenterVertex;
+    private Vertex defaultCenterVertex;
 
     @Before
     public void setUp() {
-        JenaGraphManipulator jenaGraphManipulator = JenaGraphManipulator.jenaGraphManipulatorWithDefaultUser();
-        jenaVertexManipulator = jenaVertexManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
-        jenaGraphElementManipulator = jenaGraphElementManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
-        defaultCenterVertex = jenaGraphElementManipulator.defaultUser().absoluteCentralVertex();
+        JenaGraphManipulatorMock graphManipulator = JenaGraphManipulatorMock.jenaGraphManipulatorWithDefaultUser();
+        jenaVertexManipulator = withJenaGraphManipulator(graphManipulator);
+        jenaGraphElementManipulator = jenaGraphElementManipulatorWithJenaGraphManipulator(graphManipulator);
+        defaultCenterVertex = graphManipulator.defaultCenterVertex();
     }
 
     @Test
     public void can_update_label() {
-        Statement newStatement = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.getLocalName());
-        Resource edge = newStatement.getPredicate();
-        jenaGraphElementManipulator.updateLabel(edge.getLocalName(), "likes");
-        edge = jenaGraphElementManipulator.graph().getResource(edge.getURI());
-        String edgeLabel = edge.getProperty(label).getLiteral().toString();
-        assertThat(edgeLabel, is("likes"));
+        Edge edge = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id());
+        jenaGraphElementManipulator.updateLabel(edge.id(), "likes");
+        assertThat(edge.label(), is("likes"));
 
-        Resource vertex = newStatement.getObject().asResource();
-        jenaGraphElementManipulator.updateLabel(vertex.getLocalName(), "Ju-Ji-Tsu");
-        vertex = jenaGraphElementManipulator.graph().getResource(vertex.getURI());
-        String vertexLabel = vertex.getProperty(label).getLiteral().toString();
-        assertThat(vertexLabel, is("Ju-Ji-Tsu"));
+        Vertex vertex = edge.destinationVertex();
+        jenaGraphElementManipulator.updateLabel(vertex.id(), "Ju-Ji-Tsu");
+        assertThat(vertex.label(), is("Ju-Ji-Tsu"));
     }
 
     @Test
@@ -55,7 +49,7 @@ public class JenaGraphElementManipulatorTest {
             jenaGraphElementManipulator.updateLabel("invalid_URI", "new label");
             fail();
         } catch (NonExistingResourceException e) {
-            assertThat(e.getMessage(), is("Resource with URI :" + jenaGraphElementManipulator.defaultUser().URI() + "invalid_URI not found"));
+            assertThat(e.getMessage(), is("Resource with URI: invalid_URI not found"));
         }
     }
 }

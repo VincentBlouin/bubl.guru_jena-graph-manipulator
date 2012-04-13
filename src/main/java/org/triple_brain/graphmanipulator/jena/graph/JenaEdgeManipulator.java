@@ -2,20 +2,21 @@ package org.triple_brain.graphmanipulator.jena.graph;
 
 import com.hp.hpl.jena.rdf.model.*;
 import org.triple_brain.graphmanipulator.jena.User;
-import org.triple_brain.graphmanipulator.jena.graph.exceptions.NonExistingResourceException;
+import org.triple_brain.module.graph_manipulator.EdgeManipulator;
+import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.Vertex;
 
-import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.jenaGraphElementManipulatorWithJenaGraphManipulator;
-
 /**
- * @author Vincent Blouin
+ * Copyright Mozilla Public License 1.1
  */
-public class JenaEdgeManipulator {
+public class JenaEdgeManipulator implements EdgeManipulator {
 
     private JenaGraphManipulator jenaGraphManipulator;
     private JenaGraphElementManipulator jenaGraphElementManipulator;
 
-    public static JenaEdgeManipulator jenaEdgeManipulatorWithJenaGraphManipulator(JenaGraphManipulator jenaGraphManipulator){
+    public static JenaEdgeManipulator withJenaGraphManipulator(JenaGraphManipulator jenaGraphManipulator){
         return new JenaEdgeManipulator(jenaGraphManipulator);
     }
 
@@ -24,39 +25,57 @@ public class JenaEdgeManipulator {
         jenaGraphElementManipulator = jenaGraphElementManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
     }
 
-    public Statement addRelationBetweenVertices(String sourceVertexLocalName, String destinationVertexLocalName) {
+    public Edge addRelationBetweenVertices(String sourceVertexURI, String destinationVertexURI) {
+        Resource sourceVertexResource = defaultUser().model().getResource(sourceVertexURI);
+        Resource destinationVertexResource = defaultUser().model().getResource(destinationVertexURI);
 
-        Resource sourceVertex = defaultUser().model().getResource(defaultUser().URI() + sourceVertexLocalName);
-        Resource destinationVertex = defaultUser().model().getResource(defaultUser().URI() + destinationVertexLocalName);
-        if (!graph().containsResource(sourceVertex)) {
-            throw new NonExistingResourceException(defaultUser().URI() + sourceVertexLocalName);
+        if (!graph().containsResource(sourceVertexResource)) {
+            throw new NonExistingResourceException(sourceVertexURI);
         }
 
-        if (!graph().containsResource(destinationVertex)) {
-            throw new NonExistingResourceException(defaultUser().URI() + destinationVertexLocalName);
+        if (!graph().containsResource(destinationVertexResource)) {
+            throw new NonExistingResourceException(destinationVertexURI);
         }
 
-        String edgeURI = defaultUser().URI() + defaultUser().nextId();
-        Resource newEdge = defaultUser().model().createProperty(edgeURI);
-        newEdge.addLiteral(label, "");
+        JenaVertex sourceVertex = JenaVertex.withResource(sourceVertexResource);
+        JenaVertex destinationVertex = JenaVertex.withResource(destinationVertexResource);
 
-        sourceVertex.addProperty((Property) newEdge, (RDFNode) destinationVertex);
-        return defaultUser().model().listStatements(new SimpleSelector(sourceVertex, (Property) newEdge, (RDFNode) destinationVertex)).nextStatement();
+        JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(
+                defaultUser().model(),
+                defaultUser().URI() + defaultUser().nextId(),
+                destinationVertex
+        );
+        sourceVertex.addOutgoingEdge(edge);
+        sourceVertex.addNeighbor(destinationVertex);
+        destinationVertex.addNeighbor(sourceVertex);
+        return edge;
     }
 
-    public void removeEdge(String edgeLocalName) {
-        Resource edge = defaultUser().model().getResource(defaultUser().URI() + edgeLocalName);
-        if (!graph().containsResource(edge)) {
-            throw new NonExistingResourceException(defaultUser().URI() + edgeLocalName);
+    public void removeEdge(String edgeId) {
+        Resource edgeAsResource = defaultUser().model().getResource(edgeId);
+        if (!graph().containsResource(edgeAsResource)) {
+            throw new NonExistingResourceException(edgeId);
         }
-        RDFNode objectOfEdgeToDelete = graph().listObjectsOfProperty((Property) edge).toList().get(0);
-        Statement statementWhereEdgeIsProperty = graph().listStatements(new SimpleSelector(null, (Property) edge, objectOfEdgeToDelete)).toList().get(0);
-        graph().remove(statementWhereEdgeIsProperty);
-        edge.removeProperties();
+        Edge edge = JenaEdge.withResource(edgeAsResource);
+        Vertex sourceVertex = edge.sourceVertex();
+        Vertex destinationVertex = edge.destinationVertex();
+        sourceVertex.removeOutgoingEdge(edge);
+        if(!areVerticesConnectedInAnyWay(
+                sourceVertex, destinationVertex
+        )){
+            sourceVertex.removeNeighbor(destinationVertex);
+            destinationVertex.removeNeighbor(sourceVertex);
+        }
+        edgeAsResource.removeProperties();
     }
 
-    public JenaEdgeManipulator updateLabel(String edgeLocalName, String newLabel) throws NonExistingResourceException{
-        jenaGraphElementManipulator.updateLabel(edgeLocalName, newLabel);
+    private boolean areVerticesConnectedInAnyWay(Vertex vertexA, Vertex vertexB){
+        return  vertexA.hasDestinationVertex(vertexB) ||
+                vertexB.hasDestinationVertex(vertexA);
+    }
+
+    public JenaEdgeManipulator updateLabel(String edgeURI, String newLabel) throws NonExistingResourceException {
+        jenaGraphElementManipulator.updateLabel(edgeURI, newLabel);
         return this;
     }
 
