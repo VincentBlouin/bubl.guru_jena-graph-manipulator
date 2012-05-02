@@ -167,6 +167,11 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
+    public boolean hasMinNumberOfEdgesFromCenterVertex() {
+        return resource.hasProperty(LABEL_OF_HIDDEN_EDGES());
+    }
+
+    @Override
     public void hiddenConnectedEdgesLabel(List<String> hiddenEdgeLabel) {
         resource.removeAll(LABEL_OF_HIDDEN_EDGES());
         Seq labelSequence = resource.getModel().createSeq();

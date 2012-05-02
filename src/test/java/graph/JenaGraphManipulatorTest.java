@@ -1,12 +1,16 @@
 package graph;
 
 import graph.mock.JenaGraphManipulatorMock;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator;
+import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
 import org.triple_brain.module.graph_manipulator.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Graph;
 import org.triple_brain.module.model.graph.Vertex;
@@ -18,36 +22,53 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
+import static org.triple_brain.graphmanipulator.jena.JenaConnection.closeConnection;
 
 /**
  * Copyright Mozilla Public License 1.1
  */
 public class JenaGraphManipulatorTest {
 
-    private JenaGraphManipulatorMock graphManipulator;
-    private JenaVertexManipulator vertexManipulator;
-    private JenaEdgeManipulator edgeManipulator;
+    private static JenaGraphManipulatorMock graphManipulator;
+    private static JenaVertexManipulator vertexManipulator;
+    private static JenaEdgeManipulator edgeManipulator;
     private Vertex vertexA;
     private Vertex vertexB;
     private Vertex vertexC;
 
-    @Before
-    public void setUp() {
+    private static User user;
+
+    @BeforeClass
+    public static void beforeClass() throws Exception{
+        user = User.withUsernameAndEmail(
+                "roger_lamothe",
+                "roger.lamothe@example.org"
+        );
         resetManipulators();
+    }
+
+    @Before
+    public void setUp()throws Exception{
         makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC();
     }
 
-    private void resetManipulators(){
-        graphManipulator = JenaGraphManipulatorMock.jenaGraphManipulatorWithDefaultUser();
-        vertexManipulator = JenaVertexManipulator.withJenaGraphManipulator(graphManipulator);
-        edgeManipulator = JenaEdgeManipulator.withJenaGraphManipulator(graphManipulator);
+    @AfterClass
+    public static void after()throws Exception{
+        closeConnection();
     }
 
-    private void makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() {
-        resetManipulators();
-        vertexA = graphManipulator.defaultCenterVertex();
+    private static void resetManipulators() throws Exception{
+        graphManipulator = JenaGraphManipulatorMock.mockWithUser(user);
+        vertexManipulator = JenaVertexManipulator.withUser(user);
+        edgeManipulator = JenaEdgeManipulator.withUser(user);
+    }
+
+    private void makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
+        graphManipulator.graph().removeAll();
+        JenaGraphManipulator.createUserGraph(user);
+        vertexA = vertexManipulator.defaultVertex();
         vertexA.label("vertex A");
-        vertexB = graphManipulator.userNameVertex();
+        vertexB = vertexManipulator.addVertexAndRelation(vertexA.id()).destinationVertex();
         vertexB.label("vertex B");
         vertexC = vertexManipulator.addVertexAndRelation(vertexB.id()).destinationVertex();
         vertexC.label("vertex C");
@@ -80,6 +101,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_circular_graph_with_default_center_vertex() {
         edgeManipulator.addRelationBetweenVertices(
                 vertexC.id(),
@@ -93,6 +115,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_a_limited_graph_with_default_center_vertex() throws Exception {
         Graph subGraph = graphManipulator.graphWithDefaultVertexAndDepth(2);
         assertThat(subGraph.numberOfEdges(), is(2));
@@ -107,6 +130,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_a_limited_graph_with_a_custom_center_vertex() {
         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
                 1,
@@ -119,6 +143,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_sub_graph_of_destination_vertex_of_center_vertex() {
        Edge newEdge = vertexManipulator.addVertexAndRelation(
                vertexC.id()
@@ -136,6 +161,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_sub_graph_of_source_vertex_of_center_vertex() {
         Graph subGraph;
         Edge newEdge = vertexManipulator.addVertexAndRelation(
@@ -154,6 +180,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_sub_graph_of_source_vertex_of_center_vertex_having_also_a_circular_relation() {
          edgeManipulator.addRelationBetweenVertices(
                  vertexC.id(),
@@ -169,6 +196,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void with_a_depth_of_sub_vertices_of_zero_only_central_vertex_is_returned() {
         Graph subGraph = graphManipulator.graphWithDefaultVertexAndDepth(0);
         assertThat(subGraph.numberOfVertices(), is(1));
@@ -194,6 +222,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void an_exception_is_thrown_when_getting_graph_with_custom_center_vertex_with_negative_depth() {
         try {
             graphManipulator.graphWithDepthAndCenterVertexId(-1, vertexB.id());
@@ -204,6 +233,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void an_exception_is_thrown_when_getting_graph_with_non_existing_center_vertex() {
         Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
         try {
@@ -216,6 +246,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void frontier_vertices_with_hidden_vertices_have_a_list_of_their_hidden_properties_name() {
         Edge newEdge = vertexManipulator.addVertexAndRelation(vertexB.id());
         newEdge.label("new edge");
@@ -232,6 +263,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void vertices_have_their_minimum_number_of_edges_from_center_vertex() {
         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
                 2, vertexA.id()
@@ -246,6 +278,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void with_multiple_edges_pointing_at_a_vertex_the_minimum_number_of_edges_to_get_to_the_vertex_from_the_center_vertex_is_set() {
         edgeManipulator.addRelationBetweenVertices(
                 vertexA.id(), vertexC.id()
@@ -258,6 +291,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void edges_direction_does_not_have_a_relevance_to_the_minimum_number_of_edges() {
         Edge edgeBetweenCAndA = edgeManipulator.addRelationBetweenVertices(
                 vertexA.id(), vertexC.id()
@@ -279,6 +313,7 @@ public class JenaGraphManipulatorTest {
     }
 
     @Test
+    
     public void can_get_rdf_xml_representation_of_graph(){
         assertThat(graphManipulator.toRDFXML(), is(not(nullValue())));
     }

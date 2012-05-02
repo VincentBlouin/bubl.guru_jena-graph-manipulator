@@ -2,12 +2,14 @@ package graph;
 
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import graph.mock.JenaGraphManipulatorMock;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.triple_brain.graphmanipulator.jena.graph.JenaEdge;
 import org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
@@ -16,6 +18,7 @@ import static junit.framework.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
+import static org.triple_brain.graphmanipulator.jena.JenaConnection.closeConnection;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -24,27 +27,38 @@ public class JenaEdgeManipulatorTest {
 
     private JenaEdgeManipulator edgeManipulator;
     JenaGraphManipulatorMock graphManipulator;
-    private JenaVertexManipulator jenaVertexManipulator;
+    private JenaVertexManipulator vertexManipulator;
     private Vertex defaultCenterVertex;
     private Vertex middleVertex;
     private Vertex endVertex;
 
-    @Before
-    public void setUp() {
-        graphManipulator = JenaGraphManipulatorMock.jenaGraphManipulatorWithDefaultUser();
-        jenaVertexManipulator = JenaVertexManipulator.withJenaGraphManipulator(graphManipulator);
-        edgeManipulator = JenaEdgeManipulator.withJenaGraphManipulator(graphManipulator);
-        //creating graph defaultCenterVertexId -> secondVertexId -> thirdVertexId
-        defaultCenterVertex = graphManipulator.defaultCenterVertex();
+    private User user;
 
-        middleVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
-        endVertex = jenaVertexManipulator.addVertexAndRelation(middleVertex.id()).destinationVertex();
+    @Before
+    public void setUp() throws Exception{
+        user = User.withUsernameAndEmail(
+                "roger_lamothe",
+                "roger.lamothe@example.org"
+        );
+        graphManipulator = JenaGraphManipulatorMock.mockWithUser(user);
+        vertexManipulator = JenaVertexManipulator.withUser(user);
+        edgeManipulator = JenaEdgeManipulator.withUser(user);
+        //creating graph defaultCenterVertexId -> secondVertexId -> thirdVertexId
+        defaultCenterVertex = vertexManipulator.defaultVertex();
+
+        middleVertex = vertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
+        endVertex = vertexManipulator.addVertexAndRelation(middleVertex.id()).destinationVertex();
+    }
+
+    @AfterClass
+    public static void after()throws Exception{
+        closeConnection();
     }
 
     @Test
     public void can_add_relation() {
-        Vertex secondVertex = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
-        Vertex thirdVertex = jenaVertexManipulator.addVertexAndRelation(secondVertex.id()).destinationVertex();
+        Vertex secondVertex = vertexManipulator.addVertexAndRelation(defaultCenterVertex.id()).destinationVertex();
+        Vertex thirdVertex = vertexManipulator.addVertexAndRelation(secondVertex.id()).destinationVertex();
 
         Integer numberOfEdgesAndVertices = edgeManipulator.graph().listSubjects().toList().size();
         Edge newEdge = edgeManipulator.addRelationBetweenVertices(
@@ -106,7 +120,7 @@ public class JenaEdgeManipulatorTest {
 
     @Test
     public void can_update_label() {
-        Edge edge = jenaVertexManipulator.addVertexAndRelation(defaultCenterVertex.id());
+        Edge edge = vertexManipulator.addVertexAndRelation(defaultCenterVertex.id());
         edgeManipulator.updateLabel(edge.id(), "likes");
         assertThat(edge.label(), is("likes"));
     }

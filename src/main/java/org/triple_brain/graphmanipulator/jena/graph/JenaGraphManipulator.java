@@ -1,40 +1,46 @@
 package org.triple_brain.graphmanipulator.jena.graph;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import org.triple_brain.graphmanipulator.jena.User;
 import org.triple_brain.module.graph_manipulator.GraphManipulator;
 import org.triple_brain.module.graph_manipulator.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Graph;
 import org.triple_brain.module.model.graph.GraphElement;
 import org.triple_brain.module.model.graph.Vertex;
 
 import java.io.StringWriter;
 
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.SITE_URI;
+import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
 
 /**
  * Copyright Mozilla Public License 1.1
  */
 public class JenaGraphManipulator implements GraphManipulator {
 
-    protected User defaultUser = User.withUserName("Roger Lamothe");
+    private Model userModel;
+    private User user;
 
-    private Model graphTraversalProperties = ModelFactory.createDefaultModel();
-    private Property VISITED_AT_DEPTH = graphTraversalProperties.createProperty(SITE_URI + "visited_at_depth");
-
-    public static JenaGraphManipulator withDefaultUser() {
-        return new JenaGraphManipulator();
+    public static JenaGraphManipulator withUser(User user){
+        return new JenaGraphManipulator(user);
     }
 
-    protected JenaGraphManipulator() {
+    protected JenaGraphManipulator(User user){
+        userModel = modelMaker().openModel(user.username());
+        this.user = user;
+    }
+
+    public static void createUserGraph(User user){
+        Model model = modelMaker().createModel(user.username());
+        JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
+        Vertex vertex = jenaVertexManipulator.createDefaultVertex();
+        vertex.label("me");
     }
 
     public Graph graphWithDefaultVertexAndDepth(Integer depthOfSubVertices) throws InvalidDepthOfSubVerticesException {
-        Vertex defaultCenterVertex = JenaVertex.withResource(defaultUser.absoluteCentralVertex());
+        JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
+        Vertex defaultCenterVertex = jenaVertexManipulator.defaultVertex();
         return graphWithDepthAndCenterVertexId(depthOfSubVertices, defaultCenterVertex.id());
 
     }
@@ -47,10 +53,11 @@ public class JenaGraphManipulator implements GraphManipulator {
         if (depthOfSubVertices < 0) {
             throw new InvalidDepthOfSubVerticesException(depthOfSubVertices, centerVertexURI);
         }
-        return subGraphWithCenterVertexAndDepth(
+        Graph subGraph = subGraphWithCenterVertexAndDepth(
                 JenaVertex.withResource(centralVertex),
                 depthOfSubVertices
         );
+        return subGraph;
     }
 
     public String toRDFXML() {
@@ -67,12 +74,8 @@ public class JenaGraphManipulator implements GraphManipulator {
         ).extract();
     }
 
-    public User defaultUser() {
-        return defaultUser;
-    }
-
     public Model graph() {
-        return defaultUser.model();
+        return userModel;
     }
 
     public boolean containsElement(GraphElement graphElement) {

@@ -1,8 +1,6 @@
 package learning;
 
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -125,7 +123,32 @@ public class JenaTest {
                 is("Juliette")
         );
     }
+    @Test
+    public void can_create_and_query_named_graph(){
+        Model baseModel = createModelWithAResourceCalledBobby();
+        DataSource dataSource = DatasetFactory.create(baseModel);
+        Model modelHavingGinette = createModelHavingResourceNamedGinette();
+        dataSource.addNamedModel("http://www.example.org/ginette_graph", modelHavingGinette);
+        String query = EXAMPLE_PREFIX + RDFS_PREFIX+
+                "SELECT ?ginette_name "+
+                "WHERE { " +
+                "GRAPH ex:ginette_graph {?ginette rdfs:label ?ginette_name} " +
+                "}";
+        QueryExecution qe = QueryExecutionFactory.create(query, dataSource);
+        ResultSet rs = qe.execSelect();
+        assertTrue(rs.hasNext());
+        String ginetteName = rs.next().getLiteral("?ginette_name").getString();
+        assertThat(
+                ginetteName,
+                is("Ginette"));
+    }
 
+    private Model createModelHavingResourceNamedGinette(){
+        Model model = ModelFactory.createDefaultModel();
+        Resource ginette = model.createResource("http://www.example.org/ginette");
+        ginette.addProperty(label, "Ginette");
+        return model;
+    }
 
 
     private Resource resourceWithLabelAndModel(String label, Model model){

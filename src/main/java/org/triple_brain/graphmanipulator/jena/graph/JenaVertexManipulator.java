@@ -2,33 +2,34 @@ package org.triple_brain.graphmanipulator.jena.graph;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import org.triple_brain.graphmanipulator.jena.User;
 import org.triple_brain.module.graph_manipulator.VertexManipulator;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
+import java.util.UUID;
+
 import static com.hp.hpl.jena.vocabulary.OWL2.sameAs;
 import static com.hp.hpl.jena.vocabulary.RDF.type;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElementManipulator.jenaGraphElementManipulatorWithJenaGraphManipulator;
-
+import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
+import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.SITE_URI;
 /**
  * Copyright Mozilla Public License 1.1
  */
 public class JenaVertexManipulator implements VertexManipulator{
 
-    private JenaGraphManipulator jenaGraphManipulator;
-    private JenaEdgeManipulator jenaEdgeManipulator;
+    private Model userModel;
+    private User user;
     private JenaGraphElementManipulator jenaGraphElementManipulator;
-
-    public static JenaVertexManipulator withJenaGraphManipulator(JenaGraphManipulator jenaGraphManipulator){
-        return new JenaVertexManipulator(jenaGraphManipulator);
+    public static JenaVertexManipulator withUser(User user){
+        return new JenaVertexManipulator(user);
     }
 
-    protected JenaVertexManipulator(JenaGraphManipulator jenaGraphManipulator){
-        this.jenaGraphManipulator = jenaGraphManipulator;
-        jenaGraphElementManipulator = jenaGraphElementManipulatorWithJenaGraphManipulator(jenaGraphManipulator);
-        jenaEdgeManipulator = JenaEdgeManipulator.withJenaGraphManipulator(jenaGraphManipulator);
+    protected JenaVertexManipulator(User user){
+        this.user = user;
+        userModel = modelMaker().openModel(user.username());
+        jenaGraphElementManipulator = JenaGraphElementManipulator.withUserModel(userModel);
     }
 
     public Edge addVertexAndRelation(String sourceVertexURI) throws NonExistingResourceException {
@@ -38,11 +39,15 @@ public class JenaVertexManipulator implements VertexManipulator{
             throw new NonExistingResourceException(sourceVertexURI);
         }
 
-        String newVertexURI = defaultUser().URI() + defaultUser().nextId();
-        JenaVertex newVertex = JenaVertex.withModelAndURI(defaultUser().model(), newVertexURI);
+        String newVertexURI = user.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
+        JenaVertex newVertex = JenaVertex.withModelAndURI(userModel, newVertexURI);
 
-        String edgeURI = defaultUser().URI() + defaultUser().nextId();
-        JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(defaultUser().model(), edgeURI, newVertex);
+        String edgeURI = user.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
+        JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(
+                userModel,
+                edgeURI,
+                newVertex
+        );
 
         sourceVertex.addOutgoingEdge(edge);
 
@@ -52,12 +57,27 @@ public class JenaVertexManipulator implements VertexManipulator{
         return edge;
     }
 
+    public Vertex createDefaultVertex(){
+        String newVertexURI = user.URIFromSiteURI(SITE_URI) + "default";
+        return JenaVertex.withModelAndURI(userModel, newVertexURI);
+    }
+
+    public Vertex defaultVertex(){
+        return JenaVertex.withResource(
+                userModel.getResource(user.URIFromSiteURI(SITE_URI) + "default")
+        );
+    }
+
     public JenaVertexManipulator removeVertex(String vertexURI) {
-        Resource vertexResource = defaultUser().model().getResource(vertexURI);
+        Resource vertexResource = userModel.getResource(vertexURI);
         if (!graph().containsResource(vertexResource)) {
             throw new NonExistingResourceException(vertexURI);
         }
         JenaVertex vertex = JenaVertex.withResource(vertexResource);
+        JenaEdgeManipulator jenaEdgeManipulator = JenaEdgeManipulator.withUserAndItsModel(
+            user,
+            userModel
+        );
         for(Edge edge : vertex.connectedEdges()){
             jenaEdgeManipulator.removeEdge(edge.id());
         }
@@ -71,7 +91,7 @@ public class JenaVertexManipulator implements VertexManipulator{
     }
 
     public JenaVertexManipulator semanticType(String vertexURI, String typeUri){
-        Resource vertex = defaultUser().model().getResource(vertexURI);
+        Resource vertex = userModel.getResource(vertexURI);
         if (!graph().containsResource(vertex)) {
             throw new NonExistingResourceException(vertexURI);
         }
@@ -80,10 +100,10 @@ public class JenaVertexManipulator implements VertexManipulator{
         return this;
     }
 
-    public JenaVertexManipulator sameAsResourceWithUri(String vertexLocalName, String sameAsUri){
-        Resource vertex = defaultUser().model().getResource(defaultUser().URI() + vertexLocalName);
+    public JenaVertexManipulator sameAsResourceWithUri(String vertexURI, String sameAsUri){
+        Resource vertex = userModel.getResource(vertexURI);
         if (!graph().containsResource(vertex)) {
-            throw new NonExistingResourceException(defaultUser().URI() + vertexLocalName);
+            throw new NonExistingResourceException(vertexURI);
         }
         Resource sameAsResource = graph().createResource(sameAsUri);
         vertex.addProperty(sameAs, sameAsResource);
@@ -91,10 +111,6 @@ public class JenaVertexManipulator implements VertexManipulator{
     }
 
     public Model graph(){
-        return jenaGraphManipulator.graph();
-    }
-
-    public User defaultUser(){
-        return jenaGraphManipulator.defaultUser();
+        return userModel;
     }
 }

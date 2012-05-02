@@ -1,7 +1,7 @@
 package graph.mock;
 
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.JenaVertex;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Graph;
 
 import static com.hp.hpl.jena.vocabulary.RDF.type;
@@ -15,12 +15,13 @@ public class JenaGraphManipulatorMock extends JenaGraphManipulator {
 
     public static final Integer DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES = 10;
 
-    public static JenaGraphManipulatorMock jenaGraphManipulatorWithDefaultUser() {
-        return new JenaGraphManipulatorMock();
+    public static JenaGraphManipulatorMock mockWithUser(User user) throws Exception{
+        return new JenaGraphManipulatorMock(user);
     }
 
-    private JenaGraphManipulatorMock(){
-        super();
+    private JenaGraphManipulatorMock(User user) throws Exception{
+        super(user);
+
     }
 
     public int numberOfEdgesAndVertices(){
@@ -31,15 +32,6 @@ public class JenaGraphManipulatorMock extends JenaGraphManipulator {
                         type, TRIPLE_BRAIN_EDGE()).toList()
                         .size();
     }
-
-    public JenaVertex defaultCenterVertex(){
-        return JenaVertex.withResource(defaultUser().absoluteCentralVertex());
-    }
-
-    public JenaVertex userNameVertex(){
-        return JenaVertex.withResource(defaultUser().usernameResource());
-    }
-
 
     public Graph wholeGraph(){
         return graphWithDefaultVertexAndDepth(DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES);

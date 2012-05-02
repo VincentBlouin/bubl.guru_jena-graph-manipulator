@@ -3,27 +3,34 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
-import org.triple_brain.graphmanipulator.jena.User;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.User;
+
+import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
 
 /**
  * Copyright Mozilla Public License 1.1
  */
 public class JenaGraphElementManipulator {
 
-    private JenaGraphManipulator jenaGraphManipulator;
+    private Model userModel;
 
-    public static JenaGraphElementManipulator jenaGraphElementManipulatorWithJenaGraphManipulator (JenaGraphManipulator jenaGraphManipulator){
-        return new JenaGraphElementManipulator(jenaGraphManipulator);
+    public static JenaGraphElementManipulator withUser(User user){
+        Model userModel = modelMaker().openModel(user.username());
+        return new JenaGraphElementManipulator(userModel);
     }
 
-    private JenaGraphElementManipulator(JenaGraphManipulator jenaGraphManipulator){
-        this.jenaGraphManipulator = jenaGraphManipulator;
+    public static JenaGraphElementManipulator withUserModel(Model userModel){
+        return new JenaGraphElementManipulator(userModel);
+    }
+
+    private JenaGraphElementManipulator(Model userModel){
+        this.userModel = userModel;
     }
 
     public JenaGraphElementManipulator updateLabel(String graphElementURI, String label) throws NonExistingResourceException{
 
-        Resource graphElement = defaultUser().model().getResource(graphElementURI);
+        Resource graphElement = userModel.getResource(graphElementURI);
         if (!graph().containsResource(graphElement)) {
             throw new NonExistingResourceException(graphElementURI);
         }
@@ -33,10 +40,6 @@ public class JenaGraphElementManipulator {
     }
 
     public Model graph(){
-        return jenaGraphManipulator.graph();
-    }
-
-    public User defaultUser(){
-        return jenaGraphManipulator.defaultUser();
+        return userModel;
     }
 }
