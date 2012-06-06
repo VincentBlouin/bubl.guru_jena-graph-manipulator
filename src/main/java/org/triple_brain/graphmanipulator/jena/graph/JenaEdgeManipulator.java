@@ -38,7 +38,7 @@ public class JenaEdgeManipulator implements EdgeManipulator {
 
     protected JenaEdgeManipulator(User user){
         this.user = user;
-        userModel = modelMaker().openModel(user.username());
+        userModel = modelMaker().openModel(user.mindMapURIFromSiteURI(SITE_URI));
         jenaGraphElementManipulator = JenaGraphElementManipulator.withUserModel(userModel);
     }
 

@@ -13,7 +13,7 @@ import org.triple_brain.module.model.graph.Vertex;
 import java.io.StringWriter;
 
 import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
-
+import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
 /**
  * Copyright Mozilla Public License 1.1
  */
@@ -27,12 +27,12 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     protected JenaGraphManipulator(User user){
-        userModel = modelMaker().openModel(user.username());
+        userModel = modelMaker().openModel(user.mindMapURIFromSiteURI(SITE_URI));
         this.user = user;
     }
 
     public static void createUserGraph(User user){
-        Model model = modelMaker().createModel(user.username());
+        Model model = modelMaker().createModel(user.mindMapURIFromSiteURI(SITE_URI));
         JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
         Vertex vertex = jenaVertexManipulator.createDefaultVertex();
         vertex.label("me");

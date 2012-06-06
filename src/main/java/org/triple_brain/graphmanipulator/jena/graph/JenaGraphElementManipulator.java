@@ -7,6 +7,7 @@ import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceE
 import org.triple_brain.module.model.User;
 
 import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
+import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -16,7 +17,7 @@ public class JenaGraphElementManipulator {
     private Model userModel;
 
     public static JenaGraphElementManipulator withUser(User user){
-        Model userModel = modelMaker().openModel(user.username());
+        Model userModel = modelMaker().openModel(user.mindMapURIFromSiteURI(SITE_URI));
         return new JenaGraphElementManipulator(userModel);
     }
 
