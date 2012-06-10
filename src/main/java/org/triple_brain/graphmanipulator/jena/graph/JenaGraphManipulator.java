@@ -83,4 +83,11 @@ public class JenaGraphManipulator implements GraphManipulator {
         return graph().containsResource(resource);
     }
 
+    public Vertex vertexWithURI(String uri){
+        return JenaVertex.withModelAndURI(
+                graph(),
+                uri
+        );
+    }
+
 }

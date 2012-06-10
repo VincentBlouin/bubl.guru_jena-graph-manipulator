@@ -54,4 +54,13 @@ public class GraphScenariosGenerator {
         );
     }
 
+    public Vertex addPineAppleVertexToVertex(Vertex vertex){
+        Edge newEdge = vertexManipulator.addVertexAndRelation(
+                vertex.id()
+        );
+        Vertex pineApple = newEdge.destinationVertex();
+        pineApple.label("pine Apple");
+        return pineApple;
+    }
+
 }
