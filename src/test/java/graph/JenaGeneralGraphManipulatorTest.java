@@ -3,7 +3,7 @@ package graph;
 import com.google.inject.Guice;
 import graph.mock.JenaGraphManipulatorMock;
 import graph.scenarios.GraphScenariosGenerator;
-import graph.scenarios.VertexABAndC;
+import graph.scenarios.VerticesCalledABAndC;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -64,7 +64,7 @@ public class JenaGeneralGraphManipulatorTest {
                 vertexManipulator,
                 edgeManipulator
         );
-        VertexABAndC vertexABAndC = graphScenariosGenerator.makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC();
+        VerticesCalledABAndC vertexABAndC = graphScenariosGenerator.makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC();
         vertexA = vertexABAndC.vertexA();
         vertexB = vertexABAndC.vertexB();
         vertexC = vertexABAndC.vertexC();

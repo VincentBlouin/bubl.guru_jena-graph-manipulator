@@ -34,7 +34,7 @@ public class GraphScenariosGenerator {
         this.edgeManipulator = edgeManipulator;
     }
 
-    public VertexABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
+    public VerticesCalledABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
         graphManipulator.graph().removeAll();
         JenaGraphManipulator.createUserGraph(user);
         Vertex vertexA = vertexManipulator.defaultVertex();
@@ -47,11 +47,19 @@ public class GraphScenariosGenerator {
         betweenAAndB.label("between vertex A and vertex B");
         Edge betweenBAndC = vertexB.edgeThatLinksToDestinationVertex(vertexC);
         betweenBAndC.label("between vertex B and vertex C");
-        return new VertexABAndC(
+        return new VerticesCalledABAndC(
                 vertexA,
                 vertexB,
                 vertexC
         );
+    }
+
+    public VerticesCalledABAndC makeGraphHave3SerialVerticesWithLongLabels()throws Exception{
+        VerticesCalledABAndC verticesCalledABAndC = makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC();
+        verticesCalledABAndC.vertexA().label("vertex Azure");
+        verticesCalledABAndC.vertexB().label("vertex Bareau");
+        verticesCalledABAndC.vertexC().label("vertex Cadeau");
+        return verticesCalledABAndC;
     }
 
     public Vertex addPineAppleVertexToVertex(Vertex vertex){
