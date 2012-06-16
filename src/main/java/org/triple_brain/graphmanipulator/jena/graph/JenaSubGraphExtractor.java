@@ -82,7 +82,7 @@ public class JenaSubGraphExtractor {
         ResultSet rs = qe.execSelect();
         while(rs.hasNext()){
             QuerySolution querySolution = rs.next();
-            verticesInQuery.add(JenaVertex.withResource(
+            verticesInQuery.add(JenaVertex.loadUsingResource(
                     querySolution.getResource("vertices")
             ));
         }

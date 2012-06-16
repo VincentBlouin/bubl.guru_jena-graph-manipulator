@@ -16,7 +16,6 @@ import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.QueryUtils.*;
 import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElement.jenaGraphElementWithResource;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -25,11 +24,11 @@ public class JenaVertex extends Vertex {
     protected Resource resource;
     JenaGraphElement jenaGraphElement;
 
-    public static JenaVertex withResource(Resource resource) {
+    public static JenaVertex loadUsingResource(Resource resource) {
         return new JenaVertex(resource);
     }
 
-    public static JenaVertex withModelAndURI(Model model, String URI) {
+    public static JenaVertex createUsingModelAndURI(Model model, String URI) {
         Resource resource = model.createResource(URI);
         resource.addLiteral(label, "");
         resource.addProperty(type, TRIPLE_BRAIN_VERTEX());
@@ -37,7 +36,7 @@ public class JenaVertex extends Vertex {
     }
 
     protected JenaVertex(Resource resource) {
-        jenaGraphElement = jenaGraphElementWithResource(resource);
+        jenaGraphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
     }
 
@@ -220,7 +219,7 @@ public class JenaVertex extends Vertex {
     public JenaVertex buildVertexInModel(Model model) {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
-        return withResource(resourceInModel);
+        return loadUsingResource(resourceInModel);
     }
 
     protected JenaGraphElement jenaGraphElement() {

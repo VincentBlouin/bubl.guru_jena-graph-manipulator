@@ -54,8 +54,8 @@ public class JenaEdgeManipulator implements EdgeManipulator {
             throw new NonExistingResourceException(destinationVertexURI);
         }
 
-        JenaVertex sourceVertex = JenaVertex.withResource(sourceVertexResource);
-        JenaVertex destinationVertex = JenaVertex.withResource(destinationVertexResource);
+        JenaVertex sourceVertex = JenaVertex.loadUsingResource(sourceVertexResource);
+        JenaVertex destinationVertex = JenaVertex.loadUsingResource(destinationVertexResource);
 
         JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(
                 userModel,

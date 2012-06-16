@@ -34,13 +34,12 @@ public class JenaVertexManipulator implements VertexManipulator{
 
     public Edge addVertexAndRelation(String sourceVertexURI) throws NonExistingResourceException {
         Resource subjectResource = graph().getResource(sourceVertexURI);
-        Vertex sourceVertex = JenaVertex.withResource(subjectResource);
         if (!graph().containsResource(subjectResource)) {
             throw new NonExistingResourceException(sourceVertexURI);
         }
-
+        Vertex sourceVertex = JenaVertex.loadUsingResource(subjectResource);
         String newVertexURI = user.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
-        JenaVertex newVertex = JenaVertex.withModelAndURI(userModel, newVertexURI);
+        JenaVertex newVertex = JenaVertex.createUsingModelAndURI(userModel, newVertexURI);
 
         String edgeURI = user.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
         JenaEdge edge = JenaEdge.withModelURIAndDestinationVertex(
@@ -59,11 +58,11 @@ public class JenaVertexManipulator implements VertexManipulator{
 
     public Vertex createDefaultVertex(){
         String newVertexURI = user.URIFromSiteURI(SITE_URI) + "default";
-        return JenaVertex.withModelAndURI(userModel, newVertexURI);
+        return JenaVertex.createUsingModelAndURI(userModel, newVertexURI);
     }
 
     public Vertex defaultVertex(){
-        return JenaVertex.withResource(
+        return JenaVertex.loadUsingResource(
                 userModel.getResource(user.URIFromSiteURI(SITE_URI) + "default")
         );
     }
@@ -73,7 +72,7 @@ public class JenaVertexManipulator implements VertexManipulator{
         if (!graph().containsResource(vertexResource)) {
             throw new NonExistingResourceException(vertexURI);
         }
-        JenaVertex vertex = JenaVertex.withResource(vertexResource);
+        JenaVertex vertex = JenaVertex.loadUsingResource(vertexResource);
         JenaEdgeManipulator jenaEdgeManipulator = JenaEdgeManipulator.withUserAndItsModel(
             user,
             userModel

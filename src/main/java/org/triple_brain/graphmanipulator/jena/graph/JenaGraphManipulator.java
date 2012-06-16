@@ -32,7 +32,7 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     public static void createUserGraph(User user){
-        Model model = modelMaker().createModel(user.mindMapURIFromSiteURI(SITE_URI));
+        modelMaker().createModel(user.mindMapURIFromSiteURI(SITE_URI));
         JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
         Vertex vertex = jenaVertexManipulator.createDefaultVertex();
         vertex.label("me");
@@ -54,7 +54,7 @@ public class JenaGraphManipulator implements GraphManipulator {
             throw new InvalidDepthOfSubVerticesException(depthOfSubVertices, centerVertexURI);
         }
         Graph subGraph = subGraphWithCenterVertexAndDepth(
-                JenaVertex.withResource(centralVertex),
+                JenaVertex.loadUsingResource(centralVertex),
                 depthOfSubVertices
         );
         return subGraph;
@@ -84,10 +84,11 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     public Vertex vertexWithURI(String uri){
-        return JenaVertex.withModelAndURI(
-                graph(),
-                uri
-        );
+        Resource vertex = graph().getResource(uri);
+        if (!graph().containsResource(vertex)) {
+            throw new NonExistingResourceException(uri);
+        }
+        return JenaVertex.loadUsingResource(vertex);
     }
 
 }

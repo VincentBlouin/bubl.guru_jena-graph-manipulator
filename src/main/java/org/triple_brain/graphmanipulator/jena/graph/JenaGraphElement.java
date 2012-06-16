@@ -17,7 +17,7 @@ import static com.hp.hpl.jena.vocabulary.RDFS.label;
 public class JenaGraphElement implements GraphElement{
     private Resource resource;
 
-    public static JenaGraphElement jenaGraphElementWithResource(Resource resource){
+    public static JenaGraphElement withResource(Resource resource){
         return new JenaGraphElement(resource);
     }
 
@@ -38,7 +38,10 @@ public class JenaGraphElement implements GraphElement{
     @Override
     public void label(String label) {
         resource.removeAll(RDFS.label);
-        resource.addProperty(RDFS.label, label);
+        resource.addProperty(
+                RDFS.label,
+                resource.getModel().createTypedLiteral(label)
+        );
     }
 
     @Override

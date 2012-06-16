@@ -11,7 +11,6 @@ import java.util.Set;
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
-import static org.triple_brain.graphmanipulator.jena.graph.JenaGraphElement.jenaGraphElementWithResource;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -32,12 +31,12 @@ public class JenaEdge extends Edge {
     }
 
     protected JenaEdge(Resource resource) {
-        jenaGraphElement = jenaGraphElementWithResource(resource);
+        jenaGraphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
     }
 
     protected JenaEdge(Resource resource, JenaVertex destinationVertex) {
-        jenaGraphElement = jenaGraphElementWithResource(resource);
+        jenaGraphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
         Resource destinationVertexAsResource = jenaGraphElement.resourceFromGraphElement(destinationVertex);
         resource.addProperty(DESTINATION_VERTEX(), destinationVertexAsResource);
@@ -76,7 +75,7 @@ public class JenaEdge extends Edge {
 
     @Override
     public Vertex sourceVertex() {
-        return JenaVertex.withResource(
+        return JenaVertex.loadUsingResource(
                 resource.getModel().
                         listStatements(
                                 new SimpleSelector(
@@ -89,7 +88,7 @@ public class JenaEdge extends Edge {
 
     @Override
     public Vertex destinationVertex() {
-        return JenaVertex.withResource(
+        return JenaVertex.loadUsingResource(
                 resource.getProperty(
                         DESTINATION_VERTEX()
                 ).getObject().asResource()
