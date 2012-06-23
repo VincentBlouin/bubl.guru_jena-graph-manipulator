@@ -2,7 +2,7 @@ package graph;
 
 import com.google.inject.Guice;
 import graph.mock.JenaGraphManipulatorMock;
-import graph.scenarios.GraphScenariosGenerator;
+import graph.scenarios.TestScenarios;
 import graph.scenarios.VerticesCalledABAndC;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -58,7 +58,7 @@ public class JenaGeneralGraphManipulatorTest {
     }
 
     protected void makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception {
-        GraphScenariosGenerator graphScenariosGenerator = GraphScenariosGenerator.withUserManipulators(
+        TestScenarios graphScenariosGenerator = TestScenarios.withUserManipulators(
                 user,
                 graphManipulator,
                 vertexManipulator,

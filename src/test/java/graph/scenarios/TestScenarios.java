@@ -8,18 +8,20 @@ import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
+import java.util.UUID;
+
 /*
 * Copyright Mozilla Public License 1.1
 */
-public class GraphScenariosGenerator {
+public class TestScenarios {
 
     protected User user;
     protected JenaGraphManipulatorMock graphManipulator;
     protected JenaVertexManipulator vertexManipulator;
     protected JenaEdgeManipulator edgeManipulator;
 
-    public static GraphScenariosGenerator withUserManipulators(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
-        return new GraphScenariosGenerator(
+    public static TestScenarios withUserManipulators(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
+        return new TestScenarios(
                 user,
                 graphManipulator,
                 vertexManipulator,
@@ -27,7 +29,7 @@ public class GraphScenariosGenerator {
         );
     }
 
-    protected GraphScenariosGenerator(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
+    protected TestScenarios(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
         this.user = user;
         this.graphManipulator = graphManipulator;
         this.vertexManipulator = vertexManipulator;
@@ -69,6 +71,13 @@ public class GraphScenariosGenerator {
         Vertex pineApple = newEdge.destinationVertex();
         pineApple.label("pine Apple");
         return pineApple;
+    }
+
+    public User randomUser(){
+        return User.withUsernameAndEmail(
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString() + "@example.org"
+        );
     }
 
 }
