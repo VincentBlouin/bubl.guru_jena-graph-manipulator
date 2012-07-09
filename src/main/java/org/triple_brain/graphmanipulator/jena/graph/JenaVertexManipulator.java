@@ -53,6 +53,8 @@ public class JenaVertexManipulator implements VertexManipulator{
         newVertex.addNeighbor(sourceVertex);
         sourceVertex.addNeighbor(newVertex);
 
+
+
         return edge;
     }
 
