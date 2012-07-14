@@ -25,7 +25,16 @@ public class JenaConnection {
     private static DBConnection dbConnection;
 
     public static ModelMaker modelMaker(){
-        if(modelMaker == null){
+        return staleConnectionProofModelMakerGet();
+    }
+
+    private static ModelMaker staleConnectionProofModelMakerGet(){
+        try{
+            if(modelMaker == null){
+                modelMaker = ModelFactory.createModelRDBMaker(connection());
+            }
+        }catch(Exception e){
+            e.printStackTrace();
             modelMaker = ModelFactory.createModelRDBMaker(connection());
         }
         return modelMaker;
