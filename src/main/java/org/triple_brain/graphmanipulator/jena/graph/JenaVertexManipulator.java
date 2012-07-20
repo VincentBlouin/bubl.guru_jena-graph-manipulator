@@ -91,7 +91,7 @@ public class JenaVertexManipulator implements VertexManipulator{
         return this;
     }
 
-    public JenaVertexManipulator semanticType(String vertexURI, String typeUri){
+    public JenaVertexManipulator addSemanticType(String vertexURI, String typeUri){
         Resource vertex = userModel.getResource(vertexURI);
         if (!graph().containsResource(vertex)) {
             throw new NonExistingResourceException(vertexURI);

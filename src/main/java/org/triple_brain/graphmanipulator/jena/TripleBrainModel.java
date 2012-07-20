@@ -35,6 +35,8 @@ public class TripleBrainModel {
     private static final String HAS_NEIGHBOR_URI = SITE_URI + "has_neighbor";
     private static Property HAS_NEIGHBOR;
 
+    private static final String HAS_SUGGESTION_URI = SITE_URI + "has_suggestion";
+    private static Property HAS_SUGGESTION;
 
 
     private static Model tripleBrainModel() {
@@ -47,6 +49,7 @@ public class TripleBrainModel {
             TRIPLE_BRAIN_EDGE = model.createResource(TRIPLE_BRAIN_EDGE_URI);
             DESTINATION_VERTEX = model.createProperty(DESTINATION_VERTEX_URI);
             HAS_NEIGHBOR = model.createProperty(HAS_NEIGHBOR_URI);
+            HAS_SUGGESTION = model.createProperty(HAS_SUGGESTION_URI);
         }
         return model;
     }
@@ -98,5 +101,12 @@ public class TripleBrainModel {
             HAS_NEIGHBOR = tripleBrainModel().getProperty(HAS_NEIGHBOR_URI);
         }
         return HAS_NEIGHBOR;
+    }
+
+    public static Property HAS_SUGGESTION() {
+        if (HAS_SUGGESTION == null) {
+            HAS_SUGGESTION = tripleBrainModel().getProperty(HAS_SUGGESTION_URI);
+        }
+        return HAS_SUGGESTION;
     }
 }

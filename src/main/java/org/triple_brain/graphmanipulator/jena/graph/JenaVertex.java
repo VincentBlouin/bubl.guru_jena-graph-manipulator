@@ -4,6 +4,8 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.*;
+import org.triple_brain.graphmanipulator.jena.SuggestionRdfConverter;
+import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
@@ -192,6 +194,34 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
+    public void suggestions(Set<Suggestion> suggestions) {
+        removeAllSuggestions();
+        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(resource.getModel());
+        for(Suggestion suggestion : suggestions){
+            resource.addProperty(
+                    HAS_SUGGESTION(),
+                    suggestionToRdf.suggestionToRdf(suggestion)
+                    );
+        }
+    }
+
+    @Override
+    public Set<Suggestion> suggestions() {
+        Set<Suggestion> suggestions = new HashSet<Suggestion>();
+        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(resource.getModel());
+        for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
+            suggestions.add(
+                    suggestionToRdf.rdfToSuggestion(statement.getObject().asResource())
+            );
+        }
+        return suggestions;
+    }
+
+    private void removeAllSuggestions(){
+        resource.removeAll(HAS_SUGGESTION());
+    }
+
+    @Override
     public String id() {
         return jenaGraphElement.id();
     }
@@ -219,7 +249,14 @@ public class JenaVertex extends Vertex {
     public JenaVertex buildVertexInModel(Model model) {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
+        addSuggestionsInModel(model);
         return loadUsingResource(resourceInModel);
+    }
+    private void addSuggestionsInModel(Model model){
+        for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
+            Resource suggestion = statement.getObject().asResource();
+            model.add(suggestion.listProperties());
+        }
     }
 
     protected JenaGraphElement jenaGraphElement() {
