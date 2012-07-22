@@ -1,5 +1,6 @@
 package org.triple_brain.graphmanipulator.jena.graph;
 
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -60,6 +61,10 @@ public class JenaGraphElement implements GraphElement{
 
     public Resource resourceFromGraphElement(GraphElement graphElement){
        return resource.getModel().getResource(graphElement.id());
+    }
+
+    public Model model(){
+        return resource.getModel();
     }
 
 }

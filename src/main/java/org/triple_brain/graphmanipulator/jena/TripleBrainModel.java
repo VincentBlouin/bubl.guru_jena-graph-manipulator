@@ -11,8 +11,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class TripleBrainModel {
     private static Model model;
     public static final String SITE_URI = "http://www.triple_brain.org/";
-    public static final String EMPTY_EDGE_LABEL = "a property";
-    public static final String EMPTY_VERTEX_LABEL = "a concept";
 
     private static final String MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX_URI = SITE_URI + "min_number_of_edges_from_center_vertex";
     private static Property MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX;

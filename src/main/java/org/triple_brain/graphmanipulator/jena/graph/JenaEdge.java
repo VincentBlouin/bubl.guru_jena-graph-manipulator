@@ -3,6 +3,7 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.SimpleSelector;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
@@ -16,66 +17,68 @@ import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
  * Copyright Mozilla Public License 1.1
  */
 public class JenaEdge extends Edge {
-    Resource resource;
-    JenaGraphElement jenaGraphElement;
-
-    public static JenaEdge withModelURIAndDestinationVertex(Model model, String URI, JenaVertex destinationVertex) {
+    private Resource resource;
+    private JenaGraphElement graphElement;
+    private User owner;
+    public static JenaEdge createWithModelUriDestinationVertexAndOwner(Model model, String URI, Vertex destinationVertex, User owner) {
         Resource resource = model.createProperty(URI);
         resource.addLiteral(label, "");
         resource.addProperty(type, TRIPLE_BRAIN_EDGE());
-        return new JenaEdge(resource, destinationVertex);
+        return new JenaEdge(resource, destinationVertex, owner);
     }
 
-    public static JenaEdge withResource(Resource resource) {
-        return new JenaEdge(resource);
+    public static JenaEdge loadWithResourceOfOwner(Resource resource, User owner) {
+        return new JenaEdge(resource, owner);
     }
 
-    protected JenaEdge(Resource resource) {
-        jenaGraphElement = JenaGraphElement.withResource(resource);
+    protected JenaEdge(Resource resource, User owner) {
+        graphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
+        this.owner = owner;
     }
 
-    protected JenaEdge(Resource resource, JenaVertex destinationVertex) {
-        jenaGraphElement = JenaGraphElement.withResource(resource);
+    protected JenaEdge(Resource resource, Vertex destinationVertex, User owner) {
+        graphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
-        Resource destinationVertexAsResource = jenaGraphElement.resourceFromGraphElement(destinationVertex);
+        Resource destinationVertexAsResource = graphElement.resourceFromGraphElement(destinationVertex);
         resource.addProperty(DESTINATION_VERTEX(), destinationVertexAsResource);
+        this.owner = owner;
     }
 
-    public JenaEdge buildEdgeInModel(Model model) {
+    public JenaEdge buildEdgeInModelOfUser(Model model, User owner) {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
-        return withResource(resourceInModel);
+        return loadWithResourceOfOwner(resourceInModel, owner);
     }
 
     @Override
     public String id() {
-        return jenaGraphElement.id();
+        return graphElement.id();
     }
 
     @Override
     public String label() {
-        return jenaGraphElement.label();
+        return graphElement.label();
     }
 
     @Override
     public void label(String label) {
-        jenaGraphElement.label(label);
+        graphElement.label(label);
     }
 
     @Override
     public boolean hasLabel() {
-        return jenaGraphElement.hasLabel();
+        return graphElement.hasLabel();
     }
 
     @Override
     public Set<String> types() {
-        return jenaGraphElement.types();
+        return graphElement.types();
     }
 
     @Override
     public Vertex sourceVertex() {
-        return JenaVertex.loadUsingResource(
+        return JenaVertex.loadUsingResourceOfOwner(
                 resource.getModel().
                         listStatements(
                                 new SimpleSelector(
@@ -83,15 +86,41 @@ public class JenaEdge extends Edge {
                                         HAS_OUTGOING_EDGE(),
                                         resource
                                 )).toList().get(0)
-                        .getSubject().asResource());
+                        .getSubject().asResource(),
+                owner
+        );
     }
 
     @Override
     public Vertex destinationVertex() {
-        return JenaVertex.loadUsingResource(
+        return JenaVertex.loadUsingResourceOfOwner(
                 resource.getProperty(
                         DESTINATION_VERTEX()
-                ).getObject().asResource()
+                ).getObject().asResource(),
+                owner
         );
+    }
+
+    @Override
+    public void remove() {
+        Vertex sourceVertex = sourceVertex();
+        Vertex destinationVertex = destinationVertex();
+        sourceVertex.removeOutgoingEdge(this);
+        if(!areVerticesConnectedInAnyWay(
+                sourceVertex, destinationVertex
+        )){
+            sourceVertex.removeNeighbor(destinationVertex);
+            destinationVertex.removeNeighbor(sourceVertex);
+        }
+        resource.removeProperties();
+    }
+
+    private boolean areVerticesConnectedInAnyWay(Vertex vertexA, Vertex vertexB){
+        return  vertexA.hasDestinationVertex(vertexB) ||
+                vertexB.hasDestinationVertex(vertexA);
+    }
+
+    private Model model(){
+        return graphElement.model();
     }
 }

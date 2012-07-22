@@ -1,9 +1,7 @@
 package graph.scenarios;
 
 import graph.mock.JenaGraphManipulatorMock;
-import org.triple_brain.graphmanipulator.jena.graph.JenaEdgeManipulator;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
-import org.triple_brain.graphmanipulator.jena.graph.JenaVertexManipulator;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
@@ -17,33 +15,27 @@ public class TestScenarios {
 
     protected User user;
     protected JenaGraphManipulatorMock graphManipulator;
-    protected JenaVertexManipulator vertexManipulator;
-    protected JenaEdgeManipulator edgeManipulator;
 
-    public static TestScenarios withUserManipulators(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
+    public static TestScenarios withUserManipulators(User user, JenaGraphManipulatorMock graphManipulator){
         return new TestScenarios(
                 user,
-                graphManipulator,
-                vertexManipulator,
-                edgeManipulator
+                graphManipulator
         );
     }
 
-    protected TestScenarios(User user, JenaGraphManipulatorMock graphManipulator, JenaVertexManipulator vertexManipulator, JenaEdgeManipulator edgeManipulator){
+    protected TestScenarios(User user, JenaGraphManipulatorMock graphManipulator){
         this.user = user;
         this.graphManipulator = graphManipulator;
-        this.vertexManipulator = vertexManipulator;
-        this.edgeManipulator = edgeManipulator;
     }
 
     public VerticesCalledABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
         graphManipulator.graph().removeAll();
         JenaGraphManipulator.createUserGraph(user);
-        Vertex vertexA = vertexManipulator.defaultVertex();
+        Vertex vertexA = graphManipulator.defaultVertex();
         vertexA.label("vertex A");
-        Vertex vertexB = vertexManipulator.addVertexAndRelation(vertexA.id()).destinationVertex();
+        Vertex vertexB = vertexA.addVertexAndRelation().destinationVertex();
         vertexB.label("vertex B");
-        Vertex vertexC = vertexManipulator.addVertexAndRelation(vertexB.id()).destinationVertex();
+        Vertex vertexC = vertexB.addVertexAndRelation().destinationVertex();
         vertexC.label("vertex C");
         Edge betweenAAndB = vertexA.edgeThatLinksToDestinationVertex(vertexB);
         betweenAAndB.label("between vertex A and vertex B");
@@ -65,9 +57,7 @@ public class TestScenarios {
     }
 
     public Vertex addPineAppleVertexToVertex(Vertex vertex){
-        Edge newEdge = vertexManipulator.addVertexAndRelation(
-                vertex.id()
-        );
+        Edge newEdge = vertex.addVertexAndRelation();
         Vertex pineApple = newEdge.destinationVertex();
         pineApple.label("pine Apple");
         return pineApple;

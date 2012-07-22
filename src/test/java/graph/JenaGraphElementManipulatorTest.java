@@ -15,7 +15,7 @@ public class JenaGraphElementManipulatorTest extends JenaGeneralGraphManipulator
 
     @Test
     public void can_update_label() {
-        Edge edge = vertexManipulator.addVertexAndRelation(vertexA.id());
+        Edge edge = vertexA.addVertexAndRelation();
         graphElementManipulator.updateLabel(edge.id(), "likes");
         assertThat(edge.label(), is("likes"));
 

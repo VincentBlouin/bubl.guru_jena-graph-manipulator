@@ -2,6 +2,7 @@ package org.triple_brain.graphmanipulator.jena.graph;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Graph;
 import org.triple_brain.module.model.graph.Vertex;
@@ -19,22 +20,24 @@ public class JenaSubGraphExtractor2 {
     private Model subModel = ModelFactory.createDefaultModel();
     private Map<Vertex, Integer> minDistanceFromCenterVertexMap = new HashMap<Vertex, Integer>();
     private JenaVertex centerVertex ;
+    private User user;
     private Graph subGraph = JenaGraph.withVerticesAndEdges(
             new HashSet<Vertex>(),
             new HashSet<Edge>()
             );;
     private int currentDepth = 0;
 
-    public static JenaSubGraphExtractor2 withMaximumDepthWholeModelAndCenterVertex(
-            int maximumDepth, Model wholeModel, JenaVertex centerVertex){
-        return new JenaSubGraphExtractor2(maximumDepth, wholeModel, centerVertex);
+    public static JenaSubGraphExtractor2 withMaximumDepthWholeModelCenterVertexAndUser(
+            int maximumDepth, Model wholeModel, JenaVertex centerVertex, User user){
+        return new JenaSubGraphExtractor2(maximumDepth, wholeModel, centerVertex, user);
     }
 
     protected JenaSubGraphExtractor2(
-            int maximumDepth, Model wholeModel, JenaVertex centerVertex){
+            int maximumDepth, Model wholeModel, JenaVertex centerVertex, User user){
         this.maximumDepth = maximumDepth;
         this.wholeModel = wholeModel;
         this.centerVertex = centerVertex;
+        this.user = user;
     }
 
     public Graph extract(){
@@ -45,22 +48,22 @@ public class JenaSubGraphExtractor2 {
     }
 
     private void subGraphBuiltRecursively(JenaVertex currentVertex, int currentDepth) {
-        subGraph.vertices().add(currentVertex.buildVertexInModel(subModel));
+        subGraph.vertices().add(currentVertex.buildVertexInModelWithOwner(subModel, user));
         updateMinDepthFromCenterIfNecessary(currentVertex, currentDepth);
         if (currentDepth == maximumDepth) {
             return ;
         }
         for (Edge connectedEdge : currentVertex.connectedEdges()) {
             JenaEdge edge = (JenaEdge) connectedEdge;
-            subGraph.edges().add(edge.buildEdgeInModel(subModel));
+            subGraph.edges().add(edge.buildEdgeInModelOfUser(subModel, user));
             JenaVertex sourceVertex = (JenaVertex) edge.sourceVertex();
             JenaVertex destinationVertex = (JenaVertex)  edge.destinationVertex();
-            subGraph.vertices().add(sourceVertex.buildVertexInModel(subModel));
+            subGraph.vertices().add(sourceVertex.buildVertexInModelWithOwner(subModel, user));
             updateMinDepthFromCenterIfNecessary(sourceVertex, currentDepth + 1);
             if (isCurrentDepthSmallerThanVisitedDepth(sourceVertex, currentDepth + 1)) {
                 subGraphBuiltRecursively(sourceVertex, currentDepth);
             }
-            subGraph.vertices().add(destinationVertex.buildVertexInModel(subModel));
+            subGraph.vertices().add(destinationVertex.buildVertexInModelWithOwner(subModel, user));
             updateMinDepthFromCenterIfNecessary(destinationVertex, currentDepth + 1);
             if (isCurrentDepthSmallerThanVisitedDepth(destinationVertex, currentDepth + 1)) {
                 subGraphBuiltRecursively(destinationVertex, currentDepth + 1);

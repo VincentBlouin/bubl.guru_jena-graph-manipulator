@@ -6,6 +6,7 @@ import org.triple_brain.module.graph_manipulator.GraphManipulator;
 import org.triple_brain.module.graph_manipulator.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
 import org.triple_brain.module.model.User;
+import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Graph;
 import org.triple_brain.module.model.graph.GraphElement;
 import org.triple_brain.module.model.graph.Vertex;
@@ -32,15 +33,18 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     public static void createUserGraph(User user){
-        modelMaker().createModel(user.mindMapURIFromSiteURI(SITE_URI));
-        JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
-        Vertex vertex = jenaVertexManipulator.createDefaultVertex();
+        Model model = modelMaker().createModel(user.mindMapURIFromSiteURI(SITE_URI));
+        Vertex vertex = createDefaultVertexForUserAndModel(user, model);
         vertex.label("me");
     }
 
+    public static Vertex createDefaultVertexForUserAndModel(User user, Model model){
+        String newVertexURI = user.URIFromSiteURI(SITE_URI) + "default";
+        return JenaVertex.createUsingModelUriAndOwner(model, newVertexURI, user);
+    }
+
     public Graph graphWithDefaultVertexAndDepth(Integer depthOfSubVertices) throws InvalidDepthOfSubVerticesException {
-        JenaVertexManipulator jenaVertexManipulator = JenaVertexManipulator.withUser(user);
-        Vertex defaultCenterVertex = jenaVertexManipulator.defaultVertex();
+        Vertex defaultCenterVertex = defaultVertex();
         return graphWithDepthAndCenterVertexId(depthOfSubVertices, defaultCenterVertex.id());
 
     }
@@ -54,7 +58,7 @@ public class JenaGraphManipulator implements GraphManipulator {
             throw new InvalidDepthOfSubVerticesException(depthOfSubVertices, centerVertexURI);
         }
         Graph subGraph = subGraphWithCenterVertexAndDepth(
-                JenaVertex.loadUsingResource(centralVertex),
+                JenaVertex.loadUsingResourceOfOwner(centralVertex, user),
                 depthOfSubVertices
         );
         return subGraph;
@@ -67,10 +71,11 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     private Graph subGraphWithCenterVertexAndDepth(JenaVertex centerVertex, int maximumDepth) {
-        return JenaSubGraphExtractor.withMaximumDepthWholeModelAndCenterVertex(
+        return JenaSubGraphExtractor.withMaximumDepthWholeModelCenterVertexAndUser(
                 maximumDepth,
                 graph(),
-                centerVertex
+                centerVertex,
+                user
         ).extract();
     }
 
@@ -88,7 +93,21 @@ public class JenaGraphManipulator implements GraphManipulator {
         if (!graph().containsResource(vertex)) {
             throw new NonExistingResourceException(uri);
         }
-        return JenaVertex.loadUsingResource(vertex);
+        return JenaVertex.loadUsingResourceOfOwner(vertex, user);
     }
 
+    public Edge edgeWithUri(String uri){
+        Resource edge = graph().getResource(uri);
+        if (!graph().containsResource(edge)) {
+            throw new NonExistingResourceException(uri);
+        }
+        return JenaEdge.loadWithResourceOfOwner(edge, user);
+    }
+
+    public Vertex defaultVertex(){
+        return JenaVertex.loadUsingResourceOfOwner(
+                userModel.getResource(user.URIFromSiteURI(SITE_URI) + "default"),
+                user
+        );
+    }
 }
