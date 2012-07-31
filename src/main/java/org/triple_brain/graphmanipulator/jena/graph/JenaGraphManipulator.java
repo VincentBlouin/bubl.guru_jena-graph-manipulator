@@ -71,7 +71,7 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     private Graph subGraphWithCenterVertexAndDepth(JenaVertex centerVertex, int maximumDepth) {
-        return JenaSubGraphExtractor.withMaximumDepthWholeModelCenterVertexAndUser(
+        return JenaSubGraphExtractor.withMaximumDepthWholeModelCentralVertexAndUser(
                 maximumDepth,
                 graph(),
                 centerVertex,

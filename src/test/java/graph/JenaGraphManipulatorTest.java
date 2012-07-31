@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 /**
  * Copyright Mozilla Public License 1.1
  */
-public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
+public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest {
 
     @Test
     public void can_get_graph_with_default_center_vertex() {
@@ -43,7 +43,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void can_get_circular_graph_with_default_center_vertex() {
         vertexC.addRelationToVertex(vertexA);
         Graph graph = graphManipulator.graphWithDefaultVertexAndDepth(DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES);
@@ -54,7 +53,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void can_get_a_limited_graph_with_default_center_vertex() throws Exception {
         Graph subGraph = graphManipulator.graphWithDefaultVertexAndDepth(2);
         assertThat(subGraph.numberOfEdges(), is(2));
@@ -69,7 +67,7 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
+
     public void can_get_a_limited_graph_with_a_custom_center_vertex() {
         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
                 1,
@@ -82,9 +80,9 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
+
     public void can_get_sub_graph_of_destination_vertex_of_center_vertex() {
-       Edge newEdge = vertexC.addVertexAndRelation();
+        Edge newEdge = vertexC.addVertexAndRelation();
         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
                 2, vertexB.id()
         );
@@ -98,7 +96,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void can_get_sub_graph_of_source_vertex_of_center_vertex() {
         Graph subGraph;
         Edge newEdge = vertexA.addVertexAndRelation();
@@ -115,20 +112,18 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void can_get_sub_graph_of_source_vertex_of_center_vertex_having_also_a_circular_relation() {
         vertexC.addRelationToVertex(vertexA);
-         Edge edgeGoingOutOfC = vertexC.addVertexAndRelation();
+        Edge edgeGoingOutOfC = vertexC.addVertexAndRelation();
 
-         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
-                 2,
-                 vertexA.id()
-         );
-         assertTrue(subGraph.containsVertex(edgeGoingOutOfC.destinationVertex()));
+        Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
+                2,
+                vertexA.id()
+        );
+        assertTrue(subGraph.containsVertex(edgeGoingOutOfC.destinationVertex()));
     }
 
     @Test
-    
     public void with_a_depth_of_sub_vertices_of_zero_only_central_vertex_is_returned() {
         Graph subGraph = graphManipulator.graphWithDefaultVertexAndDepth(0);
         assertThat(subGraph.numberOfVertices(), is(1));
@@ -154,7 +149,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void an_exception_is_thrown_when_getting_graph_with_custom_center_vertex_with_negative_depth() {
         try {
             graphManipulator.graphWithDepthAndCenterVertexId(-1, vertexB.id());
@@ -165,7 +159,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void an_exception_is_thrown_when_getting_graph_with_non_existing_center_vertex() {
         Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
         try {
@@ -178,7 +171,6 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
     public void frontier_vertices_with_hidden_vertices_have_a_list_of_their_hidden_properties_name() {
         Edge newEdge = vertexB.addVertexAndRelation();
         newEdge.label("new edge");
@@ -195,53 +187,25 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    
-    public void vertices_have_their_minimum_number_of_edges_from_center_vertex() {
+    public void connected_frontier_vertices_have_their_edge() {
+        Edge newEdge = vertexC.addRelationToVertex(vertexA);
+        newEdge.label("edge between frontier vertices");
         Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
-                2, vertexA.id()
+                1,
+                vertexB.id()
         );
-        Vertex vertexAInSubGraph = subGraph.vertexWithIdentifier(vertexA.id());
-        Vertex vertexBInSubGraph = subGraph.vertexWithIdentifier(vertexB.id());
-        Vertex vertexCInSubGraph = subGraph.vertexWithIdentifier(vertexC.id());
-
-        assertThat(vertexAInSubGraph.minNumberOfEdgesFromCenterVertex(), is(0));
-        assertThat(vertexBInSubGraph.minNumberOfEdgesFromCenterVertex(), is(1));
-        assertThat(vertexCInSubGraph.minNumberOfEdgesFromCenterVertex(), is(2));
+        List<String> vertexCConnectedEdgesLabel = subGraph.vertexWithIdentifier(
+                vertexC.id()
+        ).hiddenConnectedEdgesLabel();
+        assertThat(vertexCConnectedEdgesLabel.size(), is(0));
+        Vertex vertexCFromSubGraph = subGraph.vertexWithIdentifier(
+                vertexC.id()
+        );
+        assertThat(vertexCFromSubGraph.connectedEdges().size(), is(2));
     }
 
     @Test
-    
-    public void with_multiple_edges_pointing_at_a_vertex_the_minimum_number_of_edges_to_get_to_the_vertex_from_the_center_vertex_is_set() {
-        vertexA.addRelationToVertex(vertexC);
-        Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
-                2, vertexA.id()
-        );
-        Vertex vertexCInSubGraph = subGraph.vertexWithIdentifier(vertexC.id());
-        assertThat(vertexCInSubGraph.minNumberOfEdgesFromCenterVertex(), is(1));
-    }
-
-    @Test
-    
-    public void edges_direction_does_not_have_a_relevance_to_the_minimum_number_of_edges() {
-        Edge edgeBetweenCAndA = vertexA.addRelationToVertex(vertexC);
-        Graph subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
-                2, vertexA.id()
-        );
-        Vertex vertexCInSubGraph = subGraph.vertexWithIdentifier(vertexC.id());
-        assertThat(vertexCInSubGraph.minNumberOfEdgesFromCenterVertex(), is(1));
-
-        edgeBetweenCAndA.remove();
-        vertexC.addRelationToVertex(vertexA);
-
-        subGraph = graphManipulator.graphWithDepthAndCenterVertexId(
-                2, vertexA.id());
-        vertexCInSubGraph = subGraph.vertexWithIdentifier(vertexC.id());
-        assertThat(vertexCInSubGraph.minNumberOfEdgesFromCenterVertex(), is(1));
-    }
-
-    @Test
-    
-    public void can_get_rdf_xml_representation_of_graph(){
+    public void can_get_rdf_xml_representation_of_graph() {
         assertThat(graphManipulator.toRDFXML(), is(not(nullValue())));
     }
 }

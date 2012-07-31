@@ -104,19 +104,19 @@ public class JenaSubGraphExtractor2 {
 
     private void addHiddenLabelsToFrontierVertices() {
         for(Vertex vertex : subGraph.vertices()){
-            if(vertex.minNumberOfEdgesFromCenterVertex() == maximumDepth){
-                vertex.hiddenConnectedEdgesLabel(
-                        hiddenEdgesLabelOfVertex(vertex)
-                );
-            }
+//            if(vertex.minNumberOfEdgesFromCenterVertex() == maximumDepth){
+//                vertex.hiddenConnectedEdgesLabel(
+//                        hiddenEdgesLabelOfVertex(vertex)
+//                );
+//            }
         }
     }
     private void addMinDistanceFromCenterVertex(){
-        for(Vertex vertex : subGraph.vertices()){
-            vertex.minNumberOfEdgesFromCenterVertex(
-                    minDistanceFromCenterVertexMap.get(vertex)
-            );
-        }
+//        for(Vertex vertex : subGraph.vertices()){
+//            vertex.minNumberOfEdgesFromCenterVertex(
+//                    minDistanceFromCenterVertexMap.get(vertex)
+//            );
+//        }
     }
     private List<String> hiddenEdgesLabelOfVertex(Vertex vertex){
         List<String> hiddenEdgesLabel = new ArrayList<String>();

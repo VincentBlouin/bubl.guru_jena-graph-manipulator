@@ -28,42 +28,42 @@ public class JenaSubGraphExtractor {
 
     private Model wholeModel = ModelFactory.createDefaultModel();
     private Model subModel = ModelFactory.createDefaultModel();
-    private JenaVertex centerVertex ;
+    private JenaVertex centralVertex;
     private Graph subGraph;
     private User user;
     private int currentDepth = 0;
 
-    public static JenaSubGraphExtractor withMaximumDepthWholeModelCenterVertexAndUser(
-            int maximumDepth, Model wholeModel, JenaVertex centerVertex, User user){
+    public static JenaSubGraphExtractor withMaximumDepthWholeModelCentralVertexAndUser(
+            int maximumDepth, Model wholeModel, JenaVertex centerVertex, User user) {
         return new JenaSubGraphExtractor(maximumDepth, wholeModel, centerVertex, user);
     }
 
     protected JenaSubGraphExtractor(
-            int maximumDepth, Model wholeModel, JenaVertex centerVertex, User user){
+            int maximumDepth, Model wholeModel, JenaVertex centralVertex, User user) {
         this.maximumDepth = maximumDepth;
         this.wholeModel = wholeModel;
-        this.centerVertex = centerVertex;
+        this.centralVertex = centralVertex;
         this.user = user;
     }
 
-    public Graph extract(){
+    public Graph extract() {
         subGraph = JenaGraph.withVerticesAndEdges(
                 new HashSet<Vertex>(),
                 new HashSet<Edge>()
         );
-        for(currentDepth = 0 ; currentDepth <= maximumDepth; currentDepth++){
-            String query = queryToGetVerticesAtDepth(
-                    currentDepth
-            );
-            Set<JenaVertex> verticesInQuery = verticesFromQueryInModel(query);
-            if(verticesInQuery.isEmpty()){
-                return subGraph;
-            }
-            verticesInQuery.removeAll(subGraph.vertices());
-            addVerticesAndTheirEdges(
-                    verticesInQuery
-            );
+
+        String query = queryToGetVerticesAtDepth(
+                maximumDepth
+        );
+        Set<JenaVertex> verticesInQuery = verticesFromQueryInModel(query);
+        if (verticesInQuery.isEmpty()) {
+            return subGraph;
         }
+        verticesInQuery.removeAll(subGraph.vertices());
+        addVerticesAndTheirEdges(
+                verticesInQuery
+        );
+
         return subGraph;
     }
 
@@ -71,8 +71,8 @@ public class JenaSubGraphExtractor {
         return TRIPLE_BRAIN_PREFIX + RDF_PREFIX +
                 "SELECT DISTINCT ?vertices " +
                 "WHERE { " +
-                URIForQuery(centerVertex.id()) +
-                " tb:has_neighbor{"+depth+"} " +
+                URIForQuery(centralVertex.id()) +
+                " tb:has_neighbor{0," + depth + "} " +
                 "?vertices . " +
                 "} ";
     }
@@ -81,7 +81,7 @@ public class JenaSubGraphExtractor {
         Set<JenaVertex> verticesInQuery = new HashSet<JenaVertex>();
         QueryExecution qe = QueryExecutionFactory.create(query, wholeModel);
         ResultSet rs = qe.execSelect();
-        while(rs.hasNext()){
+        while (rs.hasNext()) {
             QuerySolution querySolution = rs.next();
             verticesInQuery.add(JenaVertex.loadUsingResourceOfOwner(
                     querySolution.getResource("vertices"),
@@ -92,37 +92,26 @@ public class JenaSubGraphExtractor {
     }
 
     private void addVerticesAndTheirEdges(Set<JenaVertex> vertices) {
-        for(JenaVertex vertex : vertices){
-            if(currentDepth == maximumDepth){
-                List<String> hiddenEdgesLabelOfVertex = hiddenEdgesLabelOfVertex(vertex);
-                vertex = vertex.buildVertexInModelWithOwner(subModel, user);
-                vertex.hiddenConnectedEdgesLabel(hiddenEdgesLabelOfVertex);
-            }else{
-                addEdgesOfVertex(vertex);
-                vertex = vertex.buildVertexInModelWithOwner(subModel, user);
+        List<String> hiddenEdgesLabel = new ArrayList<String>();
+        for (JenaVertex vertex : vertices) {
+            for (Edge edge : vertex.connectedEdges()) {
+                if(isHiddenEdge(edge, vertices)){
+                    hiddenEdgesLabel.add(edge.label());
+                }else{
+                    subGraph.edges().add(((JenaEdge) edge).buildEdgeInModelOfUser(
+                            subModel,
+                            user
+                    ));
+                }
             }
-            vertex.minNumberOfEdgesFromCenterVertex(currentDepth);
+            vertex = vertex.buildVertexInModelWithOwner(subModel, user);
+            vertex.hiddenConnectedEdgesLabel(hiddenEdgesLabel);
             subGraph.vertices().add(vertex);
         }
     }
 
-
-    private List<String> hiddenEdgesLabelOfVertex(Vertex vertex){
-        List<String> hiddenEdgesLabel = new ArrayList<String>();
-        Set<Edge> connectedEdges = vertex.connectedEdges();
-        connectedEdges.removeAll(subGraph.edges());
-        for(Edge edge : connectedEdges){
-            hiddenEdgesLabel.add(edge.label());
-        }
-        return hiddenEdgesLabel;
-    }
-
-    private void addEdgesOfVertex(JenaVertex vertex){
-        for(Edge edge : vertex.connectedEdges()){
-            subGraph.edges().add(((JenaEdge) edge).buildEdgeInModelOfUser(
-                    subModel,
-                    user
-            ));
-        }
+    private boolean isHiddenEdge(Edge edge, Set<JenaVertex> vertices){
+        return !vertices.contains(edge.sourceVertex()) ||
+                !vertices.contains(edge.destinationVertex());
     }
 }

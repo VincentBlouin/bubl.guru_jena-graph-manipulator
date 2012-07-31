@@ -241,17 +241,6 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
-    public void minNumberOfEdgesFromCenterVertex(int number) {
-        resource.removeAll(MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX());
-        resource.getModel().addLiteral(resource, MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX(), number);
-    }
-
-    @Override
-    public int minNumberOfEdgesFromCenterVertex() {
-        return resource.getProperty(MIN_NUMBER_OF_EDGES_FROM_CENTER_VERTEX()).getInt();
-    }
-
-    @Override
     public void suggestions(Set<Suggestion> suggestions) {
         removeSuggestions();
         SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(resource.getModel());
