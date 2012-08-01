@@ -4,12 +4,17 @@ import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import org.triple_brain.graphmanipulator.jena.SuggestionRdfConverter;
+import org.triple_brain.module.model.ExternalResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import static com.hp.hpl.jena.vocabulary.OWL2.sameAs;
@@ -49,6 +54,7 @@ public class JenaVertex extends Vertex {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
         addSuggestionsInModel(model);
+        addTypeLabelInModel(model);
         return loadUsingResourceOfOwner(resourceInModel, owner);
     }
 
@@ -110,7 +116,7 @@ public class JenaVertex extends Vertex {
 
     @Override
     public void addNeighbor(Vertex neighbor) {
-        Resource neighborAsResource = jenaGraphElement().resourceFromGraphElement(neighbor);
+        Resource neighborAsResource = graphElement().resourceFromGraphElement(neighbor);
         resource.addProperty(
                 HAS_NEIGHBOR(),
                 neighborAsResource
@@ -157,6 +163,9 @@ public class JenaVertex extends Vertex {
             edge.remove();
         }
         removeSuggestions();
+        if(hasTheAdditionalType()){
+            removeTheAdditionalType();
+        }
         resource.removeProperties();
     }
 
@@ -265,9 +274,43 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
-    public void addSemanticType(String typeUri) {
-        Resource typeAsResource = model().createResource(typeUri);
-        resource.addProperty(type, typeAsResource);
+    public boolean hasTheAdditionalType() {
+        return graphElement.containsAnExternalType();
+    }
+
+    @Override
+    public ExternalResource getTheAdditionalType() {
+        Resource type = graphElement.externalTypeInTypes();
+        try{
+            return ExternalResource.withUriAndLabel(
+                    new URI(
+                            type.getURI()
+                    ),
+                    type.getProperty(RDFS.label).getString()
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setTheAdditionalType(ExternalResource type) {
+        if(hasTheAdditionalType()){
+            removeTheAdditionalType();
+        }
+        Resource typeAsResource = model().createResource(
+                type.uri().toString()
+        );
+        typeAsResource.addProperty(
+                RDFS.label,
+                resource.getModel().createTypedLiteral(
+                        type.label()
+                )
+        );
+        resource.addProperty(
+                RDF.type,
+                typeAsResource
+        );
     }
 
     @Override
@@ -303,19 +346,27 @@ public class JenaVertex extends Vertex {
         return graphElement.hasLabel();
     }
 
-    @Override
-    public Set<String> types() {
-        return graphElement.types();
-    }
-
     private void addSuggestionsInModel(Model model){
         for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
             Resource suggestion = statement.getObject().asResource();
             model.add(suggestion.listProperties());
         }
     }
+    private void addTypeLabelInModel(Model model){
+        model.add(
+                resource.getProperty(RDF.type)
+                        .getObject()
+                        .asResource()
+                        .listProperties()
+        );
+    }
+    private void removeTheAdditionalType(){
+        Resource type = graphElement.externalTypeInTypes();
+        type.removeProperties();
+        model().remove(resource, RDF.type, type);
+    }
 
-    protected JenaGraphElement jenaGraphElement() {
+    protected JenaGraphElement graphElement() {
         return graphElement;
     }
 

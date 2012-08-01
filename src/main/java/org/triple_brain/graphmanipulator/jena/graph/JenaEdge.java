@@ -7,8 +7,6 @@ import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
-import java.util.Set;
-
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
@@ -69,11 +67,6 @@ public class JenaEdge extends Edge {
     @Override
     public boolean hasLabel() {
         return graphElement.hasLabel();
-    }
-
-    @Override
-    public Set<String> types() {
-        return graphElement.types();
     }
 
     @Override

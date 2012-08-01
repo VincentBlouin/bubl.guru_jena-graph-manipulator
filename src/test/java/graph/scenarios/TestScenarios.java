@@ -2,10 +2,13 @@ package graph.scenarios;
 
 import graph.mock.JenaGraphManipulatorMock;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
+import org.triple_brain.module.model.ExternalResource;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 /*
@@ -23,13 +26,24 @@ public class TestScenarios {
         );
     }
 
+    public static ExternalResource personType(){
+        try{
+            return ExternalResource.withUriAndLabel(
+                    new URI("http://xmlns.com/foaf/0.1/Person"),
+                    "Person"
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
     protected TestScenarios(User user, JenaGraphManipulatorMock graphManipulator){
         this.user = user;
         this.graphManipulator = graphManipulator;
     }
 
     public VerticesCalledABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
-        graphManipulator.graph().removeAll();
+        graphManipulator.model().removeAll();
         JenaGraphManipulator.createUserGraph(user);
         Vertex vertexA = graphManipulator.defaultVertex();
         vertexA.label("vertex A");

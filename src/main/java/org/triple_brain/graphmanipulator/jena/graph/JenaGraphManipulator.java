@@ -50,8 +50,8 @@ public class JenaGraphManipulator implements GraphManipulator {
     }
 
     public Graph graphWithDepthAndCenterVertexId(Integer depthOfSubVertices, String centerVertexURI) throws NonExistingResourceException {
-        Resource centralVertex = graph().getResource(centerVertexURI);
-        if (!graph().containsResource(centralVertex)) {
+        Resource centralVertex = model().getResource(centerVertexURI);
+        if (!model().containsResource(centralVertex)) {
             throw new NonExistingResourceException(centerVertexURI);
         }
         if (depthOfSubVertices < 0) {
@@ -66,39 +66,39 @@ public class JenaGraphManipulator implements GraphManipulator {
 
     public String toRDFXML() {
         StringWriter rdfXML = new StringWriter();
-        graph().write(rdfXML);
+        model().write(rdfXML);
         return rdfXML.toString();
     }
 
     private Graph subGraphWithCenterVertexAndDepth(JenaVertex centerVertex, int maximumDepth) {
         return JenaSubGraphExtractor.withMaximumDepthWholeModelCentralVertexAndUser(
                 maximumDepth,
-                graph(),
+                model(),
                 centerVertex,
                 user
         ).extract();
     }
 
-    public Model graph() {
+    public Model model() {
         return userModel;
     }
 
     public boolean containsElement(GraphElement graphElement) {
-        Resource resource = graph().getResource(graphElement.id());
-        return graph().containsResource(resource);
+        Resource resource = model().getResource(graphElement.id());
+        return model().containsResource(resource);
     }
 
     public Vertex vertexWithURI(String uri){
-        Resource vertex = graph().getResource(uri);
-        if (!graph().containsResource(vertex)) {
+        Resource vertex = model().getResource(uri);
+        if (!model().containsResource(vertex)) {
             throw new NonExistingResourceException(uri);
         }
         return JenaVertex.loadUsingResourceOfOwner(vertex, user);
     }
 
     public Edge edgeWithUri(String uri){
-        Resource edge = graph().getResource(uri);
-        if (!graph().containsResource(edge)) {
+        Resource edge = model().getResource(uri);
+        if (!model().containsResource(edge)) {
             throw new NonExistingResourceException(uri);
         }
         return JenaEdge.loadWithResourceOfOwner(edge, user);

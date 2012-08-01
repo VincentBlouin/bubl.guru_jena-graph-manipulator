@@ -25,10 +25,10 @@ public class JenaGraphManipulatorMock extends JenaGraphManipulator {
     }
 
     public int numberOfEdgesAndVertices(){
-        return graph().listSubjectsWithProperty(
+        return model().listSubjectsWithProperty(
                 type, TRIPLE_BRAIN_VERTEX()).toList()
                 .size() +
-                graph().listSubjectsWithProperty(
+                model().listSubjectsWithProperty(
                         type, TRIPLE_BRAIN_EDGE()).toList()
                         .size();
     }

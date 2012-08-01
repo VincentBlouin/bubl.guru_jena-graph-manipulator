@@ -1,6 +1,8 @@
 package graph;
 
+import graph.scenarios.TestScenarios;
 import org.junit.Test;
+import org.triple_brain.module.model.ExternalResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
@@ -54,6 +56,27 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
+    public void after_vertex_is_deleted_its_additional_type_label_is_removed_from_the_model(){
+        ExternalResource personType = TestScenarios.personType();
+        vertexA.setTheAdditionalType(
+                personType
+        );
+        assertTrue(
+                modelContainsLabel(
+                        personType.label()
+                )
+        );
+        vertexA.remove();
+        assertFalse(
+                modelContainsLabel(
+                        personType.label()
+                )
+        );
+    }
+
+    //todo test that there is a deep delete on suggestions
+
+    @Test
     public void can_update_label() {
         Edge newEdge = vertexA.addVertexAndRelation();
         Vertex vertex = newEdge.destinationVertex();
@@ -62,11 +85,12 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    public void can_set_type_of_vertex(){
-        String personClassURI = "http://xmlns.com/foaf/0.1/Person";
-        assertFalse(vertexA.types().contains(personClassURI));
-        vertexA.addSemanticType(personClassURI);
-        assertTrue(vertexA.types().contains(personClassURI));
+    public void can_set_type_an_additional_type_to_a_vertex() throws Exception{
+        assertFalse(vertexA.hasTheAdditionalType());
+        vertexA.setTheAdditionalType(
+                TestScenarios.personType()
+        );
+        assertTrue(vertexA.hasTheAdditionalType());
     }
 
     @Test
