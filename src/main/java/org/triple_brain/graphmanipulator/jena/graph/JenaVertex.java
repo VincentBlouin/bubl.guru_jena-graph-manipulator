@@ -54,7 +54,9 @@ public class JenaVertex extends Vertex {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
         addSuggestionsInModel(model);
-        addTypeLabelInModel(model);
+        if(hasTheAdditionalType()){
+            addTypeLabelInModel(model);
+        }
         return loadUsingResourceOfOwner(resourceInModel, owner);
     }
 
@@ -353,11 +355,9 @@ public class JenaVertex extends Vertex {
         }
     }
     private void addTypeLabelInModel(Model model){
+        Resource type = graphElement.externalTypeInTypes();
         model.add(
-                resource.getProperty(RDF.type)
-                        .getObject()
-                        .asResource()
-                        .listProperties()
+                type.listProperties()
         );
     }
     private void removeTheAdditionalType(){

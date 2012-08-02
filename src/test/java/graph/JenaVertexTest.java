@@ -7,7 +7,6 @@ import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    public void after_vertex_is_deleted_its_additional_type_label_is_removed_from_the_model(){
+    public void on_vertex_delete_its_additional_type_label_is_removed_from_the_model(){
         ExternalResource personType = TestScenarios.personType();
         vertexA.setTheAdditionalType(
                 personType
@@ -74,7 +73,57 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
         );
     }
 
-    //todo test that there is a deep delete on suggestions
+
+    @Test
+    public void on_vertex_remove_suggestions_properties_are_also_delete_from_the_model(){
+        Set<Suggestion> suggestions = new HashSet<Suggestion>();
+        Suggestion startDateSuggestion = TestScenarios.startDateSuggestion();
+        suggestions.add(
+                startDateSuggestion
+        );
+        vertexA.suggestions(
+                suggestions
+        );
+        assertTrue(
+                modelContainsLabel(
+                        startDateSuggestion.label()
+                )
+        );
+        assertTrue(
+                model().containsResource(
+                        model().getResource(
+                                startDateSuggestion.typeUri().toString()
+                        )
+                )
+        );
+        assertTrue(
+                model().containsResource(
+                        model().getResource(
+                                startDateSuggestion.domainUri().toString()
+                        )
+                )
+        );
+        vertexA.remove();
+        assertFalse(
+                modelContainsLabel(
+                        startDateSuggestion.label()
+                )
+        );
+        assertFalse(
+                model().containsResource(
+                        model().getResource(
+                                startDateSuggestion.typeUri().toString()
+                        )
+                )
+        );
+        assertFalse(
+                model().containsResource(
+                        model().getResource(
+                                startDateSuggestion.domainUri().toString()
+                        )
+                )
+        );
+    }
 
     @Test
     public void can_update_label() {
@@ -98,11 +147,8 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
         assertTrue(vertexA.suggestions().isEmpty());
         Set<Suggestion> suggestions = new HashSet<Suggestion>();
         suggestions.add(
-                Suggestion.withTypeDomainAndLabel(
-                new URI("http://rdf.freebase.com/rdf/time/event/start_date"),
-                new URI("http://rdf.freebase.com/rdf/type/datetime"),
-                "Start date"
-        ));
+            TestScenarios.startDateSuggestion()
+        );
         vertexA.suggestions(suggestions);
         assertFalse(vertexA.suggestions().isEmpty());
         Suggestion getSuggestion = vertexA.suggestions().iterator().next();

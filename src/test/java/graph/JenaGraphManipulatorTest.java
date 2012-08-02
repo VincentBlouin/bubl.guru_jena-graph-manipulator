@@ -1,13 +1,17 @@
 package graph;
 
+import graph.scenarios.TestScenarios;
 import org.junit.Test;
 import org.triple_brain.module.graph_manipulator.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Graph;
 import org.triple_brain.module.model.graph.Vertex;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static graph.mock.JenaGraphManipulatorMock.DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES;
 import static org.hamcrest.Matchers.not;
@@ -207,5 +211,31 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest {
     @Test
     public void can_get_rdf_xml_representation_of_graph() {
         assertThat(graphManipulator.toRDFXML(), is(not(nullValue())));
+    }
+
+    @Test
+    public void vertex_additional_type_label_is_in_sub_graph(){
+        assertFalse(vertexA.hasTheAdditionalType());
+        vertexA.setTheAdditionalType(
+                TestScenarios.personType()
+        );
+        Graph subGraph = graphManipulator.wholeGraph();
+        vertexA = subGraph.vertexWithIdentifier(vertexA.id());
+        assertThat(vertexA.getTheAdditionalType().label(), is("Person"));
+    }
+
+    @Test
+    public void vertex_suggestions_have_their_properties_sub_graph(){
+        Set<Suggestion> suggestions = new HashSet<>();
+        suggestions.add(
+                TestScenarios.startDateSuggestion()
+        );
+        vertexA.suggestions(
+            suggestions
+        );
+        Graph subGraph = graphManipulator.wholeGraph();
+        vertexA = subGraph.vertexWithIdentifier(vertexA.id());
+        Suggestion suggestion = vertexA.suggestions().iterator().next();
+        assertThat(suggestion.label(), is("Start date"));
     }
 }

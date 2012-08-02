@@ -1,6 +1,7 @@
 package graph;
 
 import com.google.inject.Guice;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import graph.mock.JenaGraphManipulatorMock;
@@ -74,5 +75,9 @@ public class JenaGeneralGraphManipulatorTest {
             }
         }
         return false;
+    }
+
+    protected Model model(){
+        return graphManipulator.model();
     }
 }

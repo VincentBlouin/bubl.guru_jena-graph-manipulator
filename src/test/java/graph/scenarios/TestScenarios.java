@@ -3,6 +3,7 @@ package graph.scenarios;
 import graph.mock.JenaGraphManipulatorMock;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
 import org.triple_brain.module.model.ExternalResource;
+import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
@@ -31,6 +32,18 @@ public class TestScenarios {
             return ExternalResource.withUriAndLabel(
                     new URI("http://xmlns.com/foaf/0.1/Person"),
                     "Person"
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Suggestion startDateSuggestion(){
+        try{
+            return Suggestion.withTypeDomainAndLabel(
+                    new URI("http://rdf.freebase.com/rdf/time/event/start_date"),
+                    new URI("http://rdf.freebase.com/rdf/type/datetime"),
+                    "Start date"
             );
         }catch(URISyntaxException e){
             throw new RuntimeException(e);
