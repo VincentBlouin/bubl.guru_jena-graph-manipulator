@@ -360,7 +360,9 @@ public class JenaVertex extends Vertex {
                 type.listProperties()
         );
     }
-    private void removeTheAdditionalType(){
+
+    @Override
+    public void removeTheAdditionalType(){
         Resource type = graphElement.externalTypeInTypes();
         type.removeProperties();
         model().remove(resource, RDF.type, type);
