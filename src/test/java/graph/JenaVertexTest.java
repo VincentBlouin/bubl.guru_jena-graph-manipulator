@@ -2,7 +2,7 @@ package graph;
 
 import graph.scenarios.TestScenarios;
 import org.junit.Test;
-import org.triple_brain.module.model.ExternalResource;
+import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
@@ -56,8 +56,8 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
 
     @Test
     public void on_vertex_delete_its_additional_type_label_is_removed_from_the_model(){
-        ExternalResource personType = TestScenarios.personType();
-        vertexA.setTheAdditionalType(
+        FriendlyResource personType = TestScenarios.personType();
+        vertexA.addType(
                 personType
         );
         assertTrue(
@@ -134,12 +134,58 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     }
 
     @Test
-    public void can_set_type_an_additional_type_to_a_vertex() throws Exception{
-        assertFalse(vertexA.hasTheAdditionalType());
-        vertexA.setTheAdditionalType(
+    public void can_add_an_additional_type_to_vertex() throws Exception{
+        assertTrue(
+                vertexA.getAdditionalTypes().isEmpty()
+        );
+        vertexA.addType(
                 TestScenarios.personType()
         );
-        assertTrue(vertexA.hasTheAdditionalType());
+        assertFalse(
+                vertexA.getAdditionalTypes().isEmpty()
+        );
+    }
+
+    @Test
+    public void can_add_multiple_additional_types_to_a_vertex() throws Exception{
+        assertTrue(
+                vertexA.getAdditionalTypes().isEmpty()
+        );
+        vertexA.addType(
+                TestScenarios.personType()
+        );
+        vertexA.addType(
+                TestScenarios.computerScientistType()
+        );
+        assertThat(
+                vertexA.getAdditionalTypes().size(),
+                is(2)
+        );
+    }
+
+    @Test
+    public void can_remove_an_additional_type_to_vertex() throws Exception{
+        vertexA.addType(
+                TestScenarios.personType()
+        );
+        FriendlyResource computerScientistType = TestScenarios.computerScientistType();
+        vertexA.addType(
+                computerScientistType
+        );
+        assertThat(
+                vertexA.getAdditionalTypes().size(),
+                is(2)
+        );
+        vertexA.removeFriendlyResource(TestScenarios.personType());
+        assertThat(
+                vertexA.getAdditionalTypes().size(),
+                is(1)
+        );
+        FriendlyResource remainingType = vertexA.getAdditionalTypes().iterator().next();
+        assertThat(
+                remainingType.label(),
+                is(computerScientistType.label())
+        );
     }
 
     @Test

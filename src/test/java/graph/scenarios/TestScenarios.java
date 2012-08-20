@@ -2,7 +2,7 @@ package graph.scenarios;
 
 import graph.mock.JenaGraphManipulatorMock;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
-import org.triple_brain.module.model.ExternalResource;
+import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
@@ -27,11 +27,44 @@ public class TestScenarios {
         );
     }
 
-    public static ExternalResource personType(){
+    public static FriendlyResource personType(){
         try{
-            return ExternalResource.withUriAndLabel(
+            return FriendlyResource.withUriAndLabel(
                     new URI("http://xmlns.com/foaf/0.1/Person"),
                     "Person"
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static FriendlyResource computerScientistType(){
+        try{
+            return FriendlyResource.withUriAndLabel(
+                    new URI("http://rdf.freebase.com/rdf/computer.computer_scientist"),
+                    "Computer Scientist"
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static FriendlyResource timBernersLee(){
+        try{
+            return FriendlyResource.withUriAndLabel(
+                    new URI("http://www.w3.org/People/Berners-Lee/card#i"),
+                    "Tim Berners-Lee"
+            );
+        }catch(URISyntaxException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static FriendlyResource timBernersLeeInFreebase(){
+        try{
+            return FriendlyResource.withUriAndLabel(
+                    new URI("http://rdf.freebase.com/rdf/en.tim_berners-lee"),
+                    "Tim Berners-Lee"
             );
         }catch(URISyntaxException e){
             throw new RuntimeException(e);

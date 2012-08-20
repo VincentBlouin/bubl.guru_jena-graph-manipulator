@@ -4,6 +4,7 @@ import graph.scenarios.TestScenarios;
 import org.junit.Test;
 import org.triple_brain.module.graph_manipulator.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.graph_manipulator.exceptions.NonExistingResourceException;
+import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Graph;
@@ -215,13 +216,16 @@ public class JenaGraphManipulatorTest extends JenaGeneralGraphManipulatorTest {
 
     @Test
     public void vertex_additional_type_label_is_in_sub_graph(){
-        assertFalse(vertexA.hasTheAdditionalType());
-        vertexA.setTheAdditionalType(
+        assertTrue(
+                vertexA.getAdditionalTypes().isEmpty()
+        );
+        vertexA.addType(
                 TestScenarios.personType()
         );
         Graph subGraph = graphManipulator.wholeGraph();
         vertexA = subGraph.vertexWithIdentifier(vertexA.id());
-        assertThat(vertexA.getTheAdditionalType().label(), is("Person"));
+        FriendlyResource additionalType = vertexA.getAdditionalTypes().iterator().next();
+        assertThat(additionalType.label(), is("Person"));
     }
 
     @Test

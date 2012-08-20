@@ -18,7 +18,7 @@ public class TripleBrainModel {
     private static final String LABEL_OF_HIDDEN_EDGES_URI = SITE_URI + "label_of_hidden_edges";
     private static Property LABEL_OF_HIDDEN_EDGES;
 
-    private static String TRIPLE_BRAIN_VERTEX_URI = SITE_URI + "vertex";
+    public static String TRIPLE_BRAIN_VERTEX_URI = SITE_URI + "vertex";
     private static Resource TRIPLE_BRAIN_VERTEX;
 
     private static final String DESTINATION_VERTEX_URI = SITE_URI + "destination_vertex";

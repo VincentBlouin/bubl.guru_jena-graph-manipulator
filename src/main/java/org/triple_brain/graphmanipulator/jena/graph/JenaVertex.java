@@ -2,22 +2,23 @@ package org.triple_brain.graphmanipulator.jena.graph;
 
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.vocabulary.OWL2;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.triple_brain.graphmanipulator.jena.FriendlyResourceRdfConverter;
 import org.triple_brain.graphmanipulator.jena.SuggestionRdfConverter;
-import org.triple_brain.module.model.ExternalResource;
+import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
+import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
-import static com.hp.hpl.jena.vocabulary.OWL2.sameAs;
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.QueryUtils.*;
@@ -53,10 +54,9 @@ public class JenaVertex extends Vertex {
     public JenaVertex buildVertexInModelWithOwner(Model model, User owner) {
         Resource resourceInModel = model.createResource(id());
         model.add(resource.listProperties());
-        addSuggestionsInModel(model);
-        if(hasTheAdditionalType()){
-            addTypeLabelInModel(model);
-        }
+        copySuggestionsInModel(model);
+        copyAdditionalTypesInModel(model);
+        copyAllSameAsInModel(model);
         return loadUsingResourceOfOwner(resourceInModel, owner);
     }
 
@@ -76,7 +76,7 @@ public class JenaVertex extends Vertex {
 
     @Override
     public void removeOutgoingEdge(Edge edge) {
-        resource.getModel().listStatements(new SimpleSelector(
+        model().listStatements(new SimpleSelector(
                 resource,
                 HAS_OUTGOING_EDGE(),
                 graphElement.resourceFromGraphElement(edge)
@@ -93,7 +93,7 @@ public class JenaVertex extends Vertex {
                 URIForQuery(id()) + " tb:has_outgoing_edge ?edge . " +
                 "?edge tb:destination_vertex " + URIForQuery(destinationVertex.id()) + " . " +
                 "}";
-        QueryExecution qe = QueryExecutionFactory.create(query, resource.getModel());
+        QueryExecution qe = QueryExecutionFactory.create(query, model());
         ResultSet rs = qe.execSelect();
         return JenaEdge.loadWithResourceOfOwner(
                 rs.next().getResource("edge"),
@@ -110,7 +110,7 @@ public class JenaVertex extends Vertex {
                     "{ ?edge tb:destination_vertex " + URIForQuery(destinationVertex.id()) + "} " +
                 "}";
         QueryExecution qe = QueryExecutionFactory.create(
-                query, resource.getModel()
+                query, model()
         );
         ResultSet rs = qe.execSelect();
         return rs.hasNext();
@@ -165,15 +165,14 @@ public class JenaVertex extends Vertex {
             edge.remove();
         }
         removeSuggestions();
-        if(hasTheAdditionalType()){
-            removeTheAdditionalType();
-        }
+        removeAdditionalTypes();
+        removeAllSameAs();
         resource.removeProperties();
     }
 
     @Override
     public void removeNeighbor(Vertex neighbor) {
-        resource.getModel().listStatements(new SimpleSelector(
+        model().listStatements(new SimpleSelector(
                 resource,
                 HAS_NEIGHBOR(),
                 graphElement.resourceFromGraphElement(neighbor)
@@ -207,7 +206,7 @@ public class JenaVertex extends Vertex {
                 "{ ?edges tb:destination_vertex " + URIForQuery(id()) + "} " +
                 "}";
         QueryExecution qe = QueryExecutionFactory.create(
-                query, resource.getModel()
+                query, model()
         );
         ResultSet rs = qe.execSelect();
         while (rs.hasNext()) {
@@ -244,7 +243,7 @@ public class JenaVertex extends Vertex {
     @Override
     public void hiddenConnectedEdgesLabel(List<String> hiddenEdgeLabel) {
         resource.removeAll(LABEL_OF_HIDDEN_EDGES());
-        Seq labelSequence = resource.getModel().createSeq();
+        Seq labelSequence = model().createSeq();
         for (String label : hiddenEdgeLabel) {
             labelSequence.add(label);
         }
@@ -254,7 +253,7 @@ public class JenaVertex extends Vertex {
     @Override
     public void suggestions(Set<Suggestion> suggestions) {
         removeSuggestions();
-        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(resource.getModel());
+        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(model());
         for(Suggestion suggestion : suggestions){
             resource.addProperty(
                     HAS_SUGGESTION(),
@@ -266,7 +265,7 @@ public class JenaVertex extends Vertex {
     @Override
     public Set<Suggestion> suggestions() {
         Set<Suggestion> suggestions = new HashSet<Suggestion>();
-        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(resource.getModel());
+        SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(model());
         for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
             suggestions.add(
                     suggestionToRdf.rdfToSuggestion(statement.getObject().asResource())
@@ -276,49 +275,83 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
-    public boolean hasTheAdditionalType() {
-        return graphElement.containsAnExternalType();
-    }
-
-    @Override
-    public ExternalResource getTheAdditionalType() {
-        Resource type = graphElement.externalTypeInTypes();
-        try{
-            return ExternalResource.withUriAndLabel(
-                    new URI(
-                            type.getURI()
-                    ),
-                    type.getProperty(RDFS.label).getString()
-            );
-        }catch(URISyntaxException e){
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void setTheAdditionalType(ExternalResource type) {
-        if(hasTheAdditionalType()){
-            removeTheAdditionalType();
-        }
-        Resource typeAsResource = model().createResource(
-                type.uri().toString()
-        );
-        typeAsResource.addProperty(
-                RDFS.label,
-                resource.getModel().createTypedLiteral(
-                        type.label()
+    public FriendlyResource friendlyResourceWithUri(URI uri) {
+        return FriendlyResourceRdfConverter.fromRdf(
+                model().getResource(
+                        uri.toString()
                 )
         );
+    }
+
+    @Override
+    public void addType(FriendlyResource type) {
         resource.addProperty(
                 RDF.type,
-                typeAsResource
+                FriendlyResourceRdfConverter.createInModel(
+                        model(),
+                        type
+                )
         );
     }
 
     @Override
-    public void setSameAsUsingUri(String sameAsUri) {
-        Resource sameAsResource = model().createResource(sameAsUri);
-        resource.addProperty(sameAs, sameAsResource);
+    public void removeFriendlyResource(FriendlyResource friendlyResource) {
+        Resource friendlyResourceAsJenaResource = model().getResource(
+                friendlyResource.uri().toString()
+        );
+        friendlyResourceAsJenaResource.removeProperties();
+        model().removeAll(
+                resource,
+                null,
+                friendlyResourceAsJenaResource
+        );
+    }
+
+    @Override
+    public Set<FriendlyResource> getAdditionalTypes() {
+        Set<FriendlyResource> additionalTypes = new HashSet<FriendlyResource>();
+        String query = TRIPLE_BRAIN_PREFIX + RDF_PREFIX +
+                "SELECT ?additional_type " +
+                "WHERE { " +
+                URIForQuery(id()) + " rdf:type ?additional_type . " +
+                "FILTER (" +
+                "?additional_type != " +
+                URIForQuery(TripleBrainModel.TRIPLE_BRAIN_VERTEX_URI) +
+                ")" +
+                "}";
+        QueryExecution qe = QueryExecutionFactory.create(query, model());
+        ResultSet rs = qe.execSelect();
+        while (rs.hasNext()) {
+            QuerySolution querySolution = rs.next();
+            additionalTypes.add(FriendlyResourceRdfConverter.fromRdf(
+                    querySolution.getResource("?additional_type")
+            ));
+        }
+        return additionalTypes;
+    }
+
+    @Override
+    public void addSameAs(FriendlyResource friendlyResource) {
+        resource.addProperty(
+                OWL2.sameAs,
+                FriendlyResourceRdfConverter.createInModel(
+                        model(),
+                        friendlyResource
+                )
+        );
+    }
+
+    @Override
+    public Set<FriendlyResource> getSameAs() {
+        Set<FriendlyResource> sameAs = new HashSet<FriendlyResource>();
+        for(Statement statement : resource.listProperties(OWL2.sameAs).toList()){
+            sameAs.add(
+                    FriendlyResourceRdfConverter.fromRdf(
+                            statement.getObject().asResource()
+                    )
+            );
+        }
+        return sameAs;
     }
 
     private void removeSuggestions(){
@@ -326,6 +359,22 @@ public class JenaVertex extends Vertex {
             statement.getObject().asResource().removeProperties();
         }
         resource.removeAll(HAS_SUGGESTION());
+    }
+    private void removeAdditionalTypes(){
+        removeFriendlyResources(
+                getAdditionalTypes()
+        );
+    }
+
+    private void removeFriendlyResources(Set<FriendlyResource> friendlyResources){
+        for(FriendlyResource type : friendlyResources){
+            removeFriendlyResource(type);
+        }
+    }
+    private void removeAllSameAs(){
+        removeFriendlyResources(
+                getSameAs()
+        );
     }
 
     @Override
@@ -348,24 +397,35 @@ public class JenaVertex extends Vertex {
         return graphElement.hasLabel();
     }
 
-    private void addSuggestionsInModel(Model model){
+    private void copySuggestionsInModel(Model model){
         for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
             Resource suggestion = statement.getObject().asResource();
             model.add(suggestion.listProperties());
         }
     }
-    private void addTypeLabelInModel(Model model){
-        Resource type = graphElement.externalTypeInTypes();
-        model.add(
-                type.listProperties()
+    private void copyAdditionalTypesInModel(Model model){
+        copyFriendlyResourcesInModel(
+                getAdditionalTypes(),
+                model
         );
     }
 
-    @Override
-    public void removeTheAdditionalType(){
-        Resource type = graphElement.externalTypeInTypes();
-        type.removeProperties();
-        model().remove(resource, RDF.type, type);
+    private void copyAllSameAsInModel(Model model){
+        copyFriendlyResourcesInModel(
+                getSameAs(),
+                model
+        );
+    }
+
+    private void copyFriendlyResourcesInModel(Set<FriendlyResource> friendlyResources, Model model){
+        for(FriendlyResource friendlyResource: friendlyResources){
+            Resource friendlyResourceAsJenaResource = model().getResource(
+                    friendlyResource.uri().toString()
+            );
+            model.add(
+                    friendlyResourceAsJenaResource.listProperties()
+            );
+        }
     }
 
     protected JenaGraphElement graphElement() {
