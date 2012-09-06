@@ -56,7 +56,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
 
     @Test
     public void on_vertex_delete_its_additional_type_label_is_removed_from_the_model(){
-        FriendlyResource personType = TestScenarios.personType();
+        FriendlyResource personType = testScenarios.personType();
         vertexA.addType(
                 personType
         );
@@ -77,7 +77,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     @Test
     public void on_vertex_remove_suggestions_properties_are_also_delete_from_the_model(){
         Set<Suggestion> suggestions = new HashSet<Suggestion>();
-        Suggestion startDateSuggestion = TestScenarios.startDateSuggestion();
+        Suggestion startDateSuggestion = testScenarios.startDateSuggestion();
         suggestions.add(
                 startDateSuggestion
         );
@@ -139,7 +139,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
                 vertexA.getAdditionalTypes().isEmpty()
         );
         vertexA.addType(
-                TestScenarios.personType()
+                testScenarios.personType()
         );
         assertFalse(
                 vertexA.getAdditionalTypes().isEmpty()
@@ -152,10 +152,10 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
                 vertexA.getAdditionalTypes().isEmpty()
         );
         vertexA.addType(
-                TestScenarios.personType()
+                testScenarios.personType()
         );
         vertexA.addType(
-                TestScenarios.computerScientistType()
+                testScenarios.computerScientistType()
         );
         assertThat(
                 vertexA.getAdditionalTypes().size(),
@@ -166,9 +166,9 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
     @Test
     public void can_remove_an_additional_type_to_vertex() throws Exception{
         vertexA.addType(
-                TestScenarios.personType()
+                testScenarios.personType()
         );
-        FriendlyResource computerScientistType = TestScenarios.computerScientistType();
+        FriendlyResource computerScientistType = testScenarios.computerScientistType();
         vertexA.addType(
                 computerScientistType
         );
@@ -176,7 +176,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
                 vertexA.getAdditionalTypes().size(),
                 is(2)
         );
-        vertexA.removeFriendlyResource(TestScenarios.personType());
+        vertexA.removeFriendlyResource(testScenarios.personType());
         assertThat(
                 vertexA.getAdditionalTypes().size(),
                 is(1)
@@ -193,7 +193,7 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
         assertTrue(vertexA.suggestions().isEmpty());
         Set<Suggestion> suggestions = new HashSet<Suggestion>();
         suggestions.add(
-            TestScenarios.startDateSuggestion()
+                testScenarios.startDateSuggestion()
         );
         vertexA.suggestions(suggestions);
         assertFalse(vertexA.suggestions().isEmpty());

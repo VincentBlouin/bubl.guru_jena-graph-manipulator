@@ -5,6 +5,7 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.tdb.TDB;
 import com.hp.hpl.jena.vocabulary.OWL2;
 import com.hp.hpl.jena.vocabulary.RDF;
 import org.triple_brain.graphmanipulator.jena.FriendlyResourceRdfConverter;
@@ -39,7 +40,10 @@ public class JenaVertex extends Vertex {
     public static JenaVertex createUsingModelUriAndOwner(Model model, String URI, User owner) {
         Resource resource = model.createResource(URI);
         resource.addLiteral(label, "");
-        resource.addProperty(type, TRIPLE_BRAIN_VERTEX());
+        resource.addProperty(
+                type,
+                TripleBrainModel.withEnglobingModel(model).TRIPLE_BRAIN_VERTEX()
+        );
         return new JenaVertex(resource, owner);
     }
 
@@ -63,7 +67,7 @@ public class JenaVertex extends Vertex {
     @Override
     public boolean hasEdge(Edge edge) {
         return resource.hasProperty(
-                HAS_OUTGOING_EDGE(),
+                graphElement.tripleBrainModel().HAS_OUTGOING_EDGE(),
                 graphElement.resourceFromGraphElement(edge)
         );
     }
@@ -71,14 +75,17 @@ public class JenaVertex extends Vertex {
     @Override
     public void addOutgoingEdge(Edge edge) {
         Resource edgeAsResource = graphElement.resourceFromGraphElement(edge);
-        resource.addProperty(HAS_OUTGOING_EDGE(), edgeAsResource);
+        resource.addProperty(
+                graphElement.tripleBrainModel().HAS_OUTGOING_EDGE(),
+                edgeAsResource
+        );
     }
 
     @Override
     public void removeOutgoingEdge(Edge edge) {
         model().listStatements(new SimpleSelector(
                 resource,
-                HAS_OUTGOING_EDGE(),
+                graphElement.tripleBrainModel().HAS_OUTGOING_EDGE(),
                 graphElement.resourceFromGraphElement(edge)
         )).nextStatement()
                 .remove();
@@ -120,7 +127,7 @@ public class JenaVertex extends Vertex {
     public void addNeighbor(Vertex neighbor) {
         Resource neighborAsResource = graphElement().resourceFromGraphElement(neighbor);
         resource.addProperty(
-                HAS_NEIGHBOR(),
+                graphElement.tripleBrainModel().HAS_NEIGHBOR(),
                 neighborAsResource
         );
     }
@@ -142,6 +149,7 @@ public class JenaVertex extends Vertex {
 
         newVertex.addNeighbor(this);
         addNeighbor(newVertex);
+        TDB.sync(resource.getModel());
         return edge;
     }
 
@@ -174,7 +182,7 @@ public class JenaVertex extends Vertex {
     public void removeNeighbor(Vertex neighbor) {
         model().listStatements(new SimpleSelector(
                 resource,
-                HAS_NEIGHBOR(),
+                graphElement.tripleBrainModel().HAS_NEIGHBOR(),
                 graphElement.resourceFromGraphElement(neighbor)
         )).nextStatement()
                 .remove();
@@ -183,7 +191,9 @@ public class JenaVertex extends Vertex {
     @Override
     public Set<Edge> outGoingEdges() {
         Set<Edge> outGoingEdges = new HashSet<Edge>();
-        List<Statement> statements = resource.listProperties(HAS_OUTGOING_EDGE()).toList();
+        List<Statement> statements = resource.listProperties(
+                graphElement.tripleBrainModel().HAS_OUTGOING_EDGE()
+        ).toList();
         for (Statement statement : statements) {
             outGoingEdges.add(
                     JenaEdge.loadWithResourceOfOwner(
@@ -223,10 +233,14 @@ public class JenaVertex extends Vertex {
     @Override
     public List<String> hiddenConnectedEdgesLabel() {
         List<String> hiddenEdgesLabel = new ArrayList<String>();
-        if(!resource.hasProperty(LABEL_OF_HIDDEN_EDGES())){
+        if(!resource.hasProperty(
+                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
+        )){
             return hiddenEdgesLabel;
         }
-        Seq labelSequence = resource.getProperty(LABEL_OF_HIDDEN_EDGES()).getSeq();
+        Seq labelSequence = resource.getProperty(
+                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
+        ).getSeq();
         for (int i = 1; i <= labelSequence.size(); i++) {
             hiddenEdgesLabel.add(
                     labelSequence.getString(i)
@@ -237,17 +251,24 @@ public class JenaVertex extends Vertex {
 
     @Override
     public boolean hasMinNumberOfEdgesFromCenterVertex() {
-        return resource.hasProperty(LABEL_OF_HIDDEN_EDGES());
+        return resource.hasProperty(
+                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
+        );
     }
 
     @Override
     public void hiddenConnectedEdgesLabel(List<String> hiddenEdgeLabel) {
-        resource.removeAll(LABEL_OF_HIDDEN_EDGES());
+        resource.removeAll(
+                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
+        );
         Seq labelSequence = model().createSeq();
         for (String label : hiddenEdgeLabel) {
             labelSequence.add(label);
         }
-        resource.addProperty(LABEL_OF_HIDDEN_EDGES(), labelSequence);
+        resource.addProperty(
+                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES(),
+                labelSequence
+        );
     }
 
     @Override
@@ -256,7 +277,7 @@ public class JenaVertex extends Vertex {
         SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(model());
         for(Suggestion suggestion : suggestions){
             resource.addProperty(
-                    HAS_SUGGESTION(),
+                    graphElement.tripleBrainModel().HAS_SUGGESTION(),
                     suggestionToRdf.suggestionToRdf(suggestion)
                     );
         }
@@ -266,7 +287,9 @@ public class JenaVertex extends Vertex {
     public Set<Suggestion> suggestions() {
         Set<Suggestion> suggestions = new HashSet<Suggestion>();
         SuggestionRdfConverter suggestionToRdf = SuggestionRdfConverter.withModel(model());
-        for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
+        for(Statement statement : resource.listProperties(
+                graphElement.tripleBrainModel().HAS_SUGGESTION()
+        ).toList()){
             suggestions.add(
                     suggestionToRdf.rdfToSuggestion(statement.getObject().asResource())
             );
@@ -355,10 +378,14 @@ public class JenaVertex extends Vertex {
     }
 
     private void removeSuggestions(){
-        for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
+        for(Statement statement : resource.listProperties(
+                graphElement.tripleBrainModel().HAS_SUGGESTION()
+        ).toList()){
             statement.getObject().asResource().removeProperties();
         }
-        resource.removeAll(HAS_SUGGESTION());
+        resource.removeAll(
+                graphElement.tripleBrainModel().HAS_SUGGESTION()
+        );
     }
     private void removeAdditionalTypes(){
         removeFriendlyResources(
@@ -398,7 +425,9 @@ public class JenaVertex extends Vertex {
     }
 
     private void copySuggestionsInModel(Model model){
-        for(Statement statement : resource.listProperties(HAS_SUGGESTION()).toList()){
+        for(Statement statement : resource.listProperties(
+                graphElement.tripleBrainModel().HAS_SUGGESTION()
+        ).toList()){
             Resource suggestion = statement.getObject().asResource();
             model.add(suggestion.listProperties());
         }

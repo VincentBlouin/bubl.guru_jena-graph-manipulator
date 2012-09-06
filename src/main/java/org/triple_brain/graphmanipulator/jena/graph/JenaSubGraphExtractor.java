@@ -12,7 +12,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
-import org.triple_brain.module.model.graph.Graph;
+import org.triple_brain.module.model.graph.SubGraph;
 import org.triple_brain.module.model.graph.Vertex;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class JenaSubGraphExtractor {
     private Model wholeModel = ModelFactory.createDefaultModel();
     private Model subModel = ModelFactory.createDefaultModel();
     private JenaVertex centralVertex;
-    private Graph subGraph;
+    private SubGraph subGraph;
     private User user;
     private int currentDepth = 0;
 
@@ -46,8 +46,8 @@ public class JenaSubGraphExtractor {
         this.user = user;
     }
 
-    public Graph extract() {
-        subGraph = JenaGraph.withVerticesAndEdges(
+    public SubGraph extract() {
+        subGraph = JenaSubGraph.withVerticesAndEdges(
                 new HashSet<Vertex>(),
                 new HashSet<Edge>()
         );

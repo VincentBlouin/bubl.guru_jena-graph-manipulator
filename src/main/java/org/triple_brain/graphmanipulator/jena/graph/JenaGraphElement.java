@@ -3,6 +3,7 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
+import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
 import org.triple_brain.module.model.graph.GraphElement;
 
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
@@ -51,6 +52,10 @@ public class JenaGraphElement implements GraphElement {
 
     public Model model() {
         return resource.getModel();
+    }
+
+    public TripleBrainModel tripleBrainModel(){
+        return TripleBrainModel.withEnglobingModel(resource.getModel());
     }
 
 }

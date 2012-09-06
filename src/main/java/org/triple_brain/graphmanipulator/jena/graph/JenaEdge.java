@@ -3,13 +3,14 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.SimpleSelector;
+import com.hp.hpl.jena.tdb.TDB;
+import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
 
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -21,7 +22,10 @@ public class JenaEdge extends Edge {
     public static JenaEdge createWithModelUriDestinationVertexAndOwner(Model model, String URI, Vertex destinationVertex, User owner) {
         Resource resource = model.createProperty(URI);
         resource.addLiteral(label, "");
-        resource.addProperty(type, TRIPLE_BRAIN_EDGE());
+        resource.addProperty(
+                type,
+                TripleBrainModel.withEnglobingModel(model).TRIPLE_BRAIN_EDGE()
+        );
         return new JenaEdge(resource, destinationVertex, owner);
     }
 
@@ -39,7 +43,10 @@ public class JenaEdge extends Edge {
         graphElement = JenaGraphElement.withResource(resource);
         this.resource = resource;
         Resource destinationVertexAsResource = graphElement.resourceFromGraphElement(destinationVertex);
-        resource.addProperty(DESTINATION_VERTEX(), destinationVertexAsResource);
+        resource.addProperty(
+                graphElement.tripleBrainModel().DESTINATION_VERTEX(),
+                destinationVertexAsResource
+        );
         this.owner = owner;
     }
 
@@ -76,7 +83,7 @@ public class JenaEdge extends Edge {
                         listStatements(
                                 new SimpleSelector(
                                         null,
-                                        HAS_OUTGOING_EDGE(),
+                                        graphElement.tripleBrainModel().HAS_OUTGOING_EDGE(),
                                         resource
                                 )).toList().get(0)
                         .getSubject().asResource(),
@@ -86,12 +93,21 @@ public class JenaEdge extends Edge {
 
     @Override
     public Vertex destinationVertex() {
+        TDB.sync(model());
         return JenaVertex.loadUsingResourceOfOwner(
                 resource.getProperty(
-                        DESTINATION_VERTEX()
+                        graphElement.tripleBrainModel().DESTINATION_VERTEX()
                 ).getObject().asResource(),
                 owner
         );
+    }
+
+    @Override
+    public Vertex otherVertex(Vertex vertex) {
+        Vertex sourceVertex = sourceVertex();
+        return sourceVertex.equals(vertex) ?
+                destinationVertex():
+                sourceVertex;
     }
 
     @Override

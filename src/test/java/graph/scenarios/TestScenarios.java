@@ -1,13 +1,14 @@
 package graph.scenarios;
 
-import graph.mock.JenaGraphManipulatorMock;
-import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
 import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.GraphMaker;
+import org.triple_brain.module.model.graph.UserGraph;
 import org.triple_brain.module.model.graph.Vertex;
 
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -17,17 +18,10 @@ import java.util.UUID;
 */
 public class TestScenarios {
 
-    protected User user;
-    protected JenaGraphManipulatorMock graphManipulator;
+    @Inject
+    protected GraphMaker graphMaker;
 
-    public static TestScenarios withUserManipulators(User user, JenaGraphManipulatorMock graphManipulator){
-        return new TestScenarios(
-                user,
-                graphManipulator
-        );
-    }
-
-    public static FriendlyResource personType(){
+    public FriendlyResource personType(){
         try{
             return FriendlyResource.withUriAndLabel(
                     new URI("http://xmlns.com/foaf/0.1/Person"),
@@ -38,7 +32,7 @@ public class TestScenarios {
         }
     }
 
-    public static FriendlyResource computerScientistType(){
+    public FriendlyResource computerScientistType(){
         try{
             return FriendlyResource.withUriAndLabel(
                     new URI("http://rdf.freebase.com/rdf/computer.computer_scientist"),
@@ -49,7 +43,7 @@ public class TestScenarios {
         }
     }
 
-    public static FriendlyResource timBernersLee(){
+    public FriendlyResource timBernersLee(){
         try{
             return FriendlyResource.withUriAndLabel(
                     new URI("http://www.w3.org/People/Berners-Lee/card#i"),
@@ -60,7 +54,7 @@ public class TestScenarios {
         }
     }
 
-    public static FriendlyResource timBernersLeeInFreebase(){
+    public FriendlyResource timBernersLeeInFreebase(){
         try{
             return FriendlyResource.withUriAndLabel(
                     new URI("http://rdf.freebase.com/rdf/en.tim_berners-lee"),
@@ -71,7 +65,7 @@ public class TestScenarios {
         }
     }
 
-    public static Suggestion startDateSuggestion(){
+    public Suggestion startDateSuggestion(){
         try{
             return Suggestion.withTypeDomainAndLabel(
                     new URI("http://rdf.freebase.com/rdf/time/event/start_date"),
@@ -83,15 +77,10 @@ public class TestScenarios {
         }
     }
 
-    protected TestScenarios(User user, JenaGraphManipulatorMock graphManipulator){
-        this.user = user;
-        this.graphManipulator = graphManipulator;
-    }
-
-    public VerticesCalledABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception{
-        graphManipulator.model().removeAll();
-        JenaGraphManipulator.createUserGraph(user);
-        Vertex vertexA = graphManipulator.defaultVertex();
+    public VerticesCalledABAndC makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC(UserGraph userGraph) throws Exception{
+        userGraph.remove();
+        graphMaker.createForUser(userGraph.user());
+        Vertex vertexA = userGraph.defaultVertex();
         vertexA.label("vertex A");
         Vertex vertexB = vertexA.addVertexAndRelation().destinationVertex();
         vertexB.label("vertex B");
@@ -108,8 +97,8 @@ public class TestScenarios {
         );
     }
 
-    public VerticesCalledABAndC makeGraphHave3SerialVerticesWithLongLabels()throws Exception{
-        VerticesCalledABAndC verticesCalledABAndC = makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC();
+    public VerticesCalledABAndC makeGraphHave3SerialVerticesWithLongLabels(UserGraph userGraph)throws Exception{
+        VerticesCalledABAndC verticesCalledABAndC = makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC(userGraph);
         verticesCalledABAndC.vertexA().label("vertex Azure");
         verticesCalledABAndC.vertexB().label("vertex Bareau");
         verticesCalledABAndC.vertexC().label("vertex Cadeau");

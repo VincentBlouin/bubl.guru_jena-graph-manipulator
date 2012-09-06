@@ -2,7 +2,10 @@ package graph;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import graph.scenarios.TestScenarios;
 import org.triple_brain.graphmanipulator.jena.JenaConnection;
+import org.triple_brain.graphmanipulator.jena.graph.JenaGraphMaker;
+import org.triple_brain.module.model.graph.GraphMaker;
 import org.triple_brain.module.repository_sql.JenaFriendlyDataSource;
 import org.triple_brain.module.repository_sql.JenaH2DataSource;
 
@@ -11,7 +14,7 @@ import javax.sql.DataSource;
 /*
 * Copyright Mozilla Public License 1.1
 */
-public class JenaSQLTestModule extends AbstractModule{
+public class JenaTestModule extends AbstractModule{
 
     @Override
     protected void configure() {
@@ -25,6 +28,10 @@ public class JenaSQLTestModule extends AbstractModule{
         bind(String.class)
                 .annotatedWith(Names.named("jenaDatabaseTypeName"))
                 .toInstance(jenaFriendlyDataSource.getDatabaseTypeName());
+
+        bind(GraphMaker.class).to(JenaGraphMaker.class);
+
+        requestInjection(TestScenarios.class);
     }
 
 }

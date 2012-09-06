@@ -1,17 +1,15 @@
 package graph.mock;
 
-import org.triple_brain.graphmanipulator.jena.graph.JenaGraphManipulator;
+import com.hp.hpl.jena.vocabulary.RDF;
+import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
+import org.triple_brain.graphmanipulator.jena.graph.JenaUserGraph;
 import org.triple_brain.module.model.User;
-import org.triple_brain.module.model.graph.Graph;
-
-import static com.hp.hpl.jena.vocabulary.RDF.type;
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.TRIPLE_BRAIN_EDGE;
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.TRIPLE_BRAIN_VERTEX;
+import org.triple_brain.module.model.graph.SubGraph;
 
 /**
  * Copyright Mozilla Public License 1.1
  */
-public class JenaGraphManipulatorMock extends JenaGraphManipulator {
+public class JenaGraphManipulatorMock extends JenaUserGraph {
 
     public static final Integer DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES = 10;
 
@@ -26,14 +24,18 @@ public class JenaGraphManipulatorMock extends JenaGraphManipulator {
 
     public int numberOfEdgesAndVertices(){
         return model().listSubjectsWithProperty(
-                type, TRIPLE_BRAIN_VERTEX()).toList()
+                RDF.type,
+                TripleBrainModel.withEnglobingModel(model()).TRIPLE_BRAIN_VERTEX()
+        ).toList()
                 .size() +
                 model().listSubjectsWithProperty(
-                        type, TRIPLE_BRAIN_EDGE()).toList()
+                        RDF.type,
+                        TripleBrainModel.withEnglobingModel(model()).TRIPLE_BRAIN_EDGE()
+                ).toList()
                         .size();
     }
 
-    public Graph wholeGraph(){
+    public SubGraph wholeGraph(){
         return graphWithDefaultVertexAndDepth(DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES);
     }
 }

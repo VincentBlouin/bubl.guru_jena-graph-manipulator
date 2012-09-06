@@ -1,8 +1,10 @@
 package org.triple_brain.graphmanipulator.jena;
 
 import com.hp.hpl.jena.db.DBConnection;
+import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.ModelMaker;
+import com.hp.hpl.jena.tdb.TDBFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -23,9 +25,12 @@ public class JenaConnection {
 
     private static ModelMaker modelMaker;
     private static DBConnection dbConnection;
+    private static Dataset dataset;
+    public static String ModelsDirectory = "src/main/resources/tdb";
 
-    public static ModelMaker modelMaker(){
-        return staleConnectionProofModelMakerGet();
+    public static Dataset modelMaker(){
+        dataset = TDBFactory.createDataset(ModelsDirectory);
+        return dataset;
     }
 
     private static ModelMaker staleConnectionProofModelMakerGet(){
@@ -41,7 +46,7 @@ public class JenaConnection {
     }
 
     public static void closeConnection() throws SQLException {
-        dbConnection.close();
+        dataset.close();
         modelMaker = null;
     }
 

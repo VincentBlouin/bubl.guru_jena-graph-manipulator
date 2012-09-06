@@ -1,7 +1,7 @@
 package org.triple_brain.graphmanipulator.jena.graph;
 
 import org.triple_brain.module.model.graph.Edge;
-import org.triple_brain.module.model.graph.Graph;
+import org.triple_brain.module.model.graph.SubGraph;
 import org.triple_brain.module.model.graph.Vertex;
 
 import java.util.HashSet;
@@ -10,16 +10,16 @@ import java.util.Set;
 /**
  * Copyright Mozilla Public License 1.1
  */
-public class JenaGraph implements Graph {
+public class JenaSubGraph implements SubGraph {
 
     private Set<Vertex> vertices = new HashSet<Vertex>();
     private Set<Edge> edges = new HashSet<Edge>();
 
-    public static JenaGraph withVerticesAndEdges(Set<Vertex> vertices, Set<Edge> edges){
-        return new JenaGraph(vertices, edges);
+    public static JenaSubGraph withVerticesAndEdges(Set<Vertex> vertices, Set<Edge> edges){
+        return new JenaSubGraph(vertices, edges);
     }
-    
-    protected JenaGraph(Set<Vertex> vertices, Set<Edge> edges){
+
+    protected JenaSubGraph(Set<Vertex> vertices, Set<Edge> edges){
         this.vertices = vertices;
         this.edges = edges;
     }
