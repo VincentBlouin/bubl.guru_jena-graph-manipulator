@@ -134,7 +134,7 @@ public class JenaVertex extends Vertex {
 
     @Override
     public Edge addVertexAndRelation() {
-        String newVertexURI = owner.URIFromSiteURI(TripleBrainUris.BASE) + UUID.randomUUID().toString();
+        String newVertexURI = owner.generateUri().toString();
         JenaVertex newVertex = JenaVertex.createUsingModelUriAndOwner(model(), newVertexURI, owner);
 
         String edgeURI = owner.URIFromSiteURI(TripleBrainUris.BASE) + UUID.randomUUID().toString();

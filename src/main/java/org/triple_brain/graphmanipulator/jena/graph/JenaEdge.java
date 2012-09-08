@@ -19,6 +19,7 @@ public class JenaEdge extends Edge {
     private Resource resource;
     private JenaGraphElement graphElement;
     private User owner;
+
     public static JenaEdge createWithModelUriDestinationVertexAndOwner(Model model, String URI, Vertex destinationVertex, User owner) {
         Resource resource = model.createProperty(URI);
         resource.addLiteral(label, "");
@@ -106,8 +107,14 @@ public class JenaEdge extends Edge {
     public Vertex otherVertex(Vertex vertex) {
         Vertex sourceVertex = sourceVertex();
         return sourceVertex.equals(vertex) ?
-                destinationVertex():
+                destinationVertex() :
                 sourceVertex;
+    }
+
+    @Override
+    public boolean hasVertex(Vertex vertex) {
+        return sourceVertex().equals(vertex) ||
+                destinationVertex().equals(vertex);
     }
 
     @Override
@@ -115,21 +122,21 @@ public class JenaEdge extends Edge {
         Vertex sourceVertex = sourceVertex();
         Vertex destinationVertex = destinationVertex();
         sourceVertex.removeOutgoingEdge(this);
-        if(!areVerticesConnectedInAnyWay(
+        if (!areVerticesConnectedInAnyWay(
                 sourceVertex, destinationVertex
-        )){
+        )) {
             sourceVertex.removeNeighbor(destinationVertex);
             destinationVertex.removeNeighbor(sourceVertex);
         }
         resource.removeProperties();
     }
 
-    private boolean areVerticesConnectedInAnyWay(Vertex vertexA, Vertex vertexB){
-        return  vertexA.hasDestinationVertex(vertexB) ||
+    private boolean areVerticesConnectedInAnyWay(Vertex vertexA, Vertex vertexB) {
+        return vertexA.hasDestinationVertex(vertexB) ||
                 vertexB.hasDestinationVertex(vertexA);
     }
 
-    private Model model(){
+    private Model model() {
         return graphElement.model();
     }
 }
