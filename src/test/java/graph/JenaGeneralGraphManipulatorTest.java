@@ -5,9 +5,7 @@ import com.google.inject.Injector;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.vocabulary.RDFS;
-import graph.mock.JenaGraphManipulatorMock;
-import graph.scenarios.TestScenarios;
-import graph.scenarios.VerticesCalledABAndC;
+import graph.mock.JenaUserGraphMock;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,6 +13,8 @@ import org.junit.Ignore;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphMaker;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Vertex;
+import org.triple_brain.module.model.graph.scenarios.TestScenarios;
+import org.triple_brain.module.model.graph.scenarios.VerticesCalledABAndC;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -30,7 +30,7 @@ public class JenaGeneralGraphManipulatorTest {
     @Inject
     protected TestScenarios testScenarios;
 
-    protected static JenaGraphManipulatorMock graphManipulator;
+    protected static JenaUserGraphMock userGraph;
     protected Vertex vertexA;
     protected Vertex vertexB;
     protected Vertex vertexC;
@@ -63,7 +63,7 @@ public class JenaGeneralGraphManipulatorTest {
     }
 
     protected static void resetManipulators() throws Exception {
-        graphManipulator = JenaGraphManipulatorMock.mockWithUser(user);
+        userGraph = JenaUserGraphMock.mockWithUser(user);
     }
 
     protected void makeGraphHave3VerticesABCWhereAIsDefaultCenterVertexAndAPointsToBAndBPointsToC() throws Exception {
@@ -76,7 +76,7 @@ public class JenaGeneralGraphManipulatorTest {
     }
 
     protected boolean modelContainsLabel(String label){
-        List<RDFNode> allLabelsInModel = graphManipulator.model().listObjectsOfProperty(RDFS.label).toList();
+        List<RDFNode> allLabelsInModel = userGraph.model().listObjectsOfProperty(RDFS.label).toList();
         for(RDFNode rdfNode : allLabelsInModel){
             if(rdfNode.asLiteral().getString().equals(label)){
                 return true;
@@ -86,6 +86,6 @@ public class JenaGeneralGraphManipulatorTest {
     }
 
     protected Model model(){
-        return graphManipulator.model();
+        return userGraph.model();
     }
 }

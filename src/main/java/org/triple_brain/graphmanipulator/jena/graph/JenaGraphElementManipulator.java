@@ -8,7 +8,7 @@ public class JenaGraphElementManipulator {
 //    private Model userModel;
 //
 //    public static JenaGraphElementManipulator withUser(User user){
-//        Model userModel = JenaConnection.modelMaker().getNamedModel(user.mindMapURIFromSiteURI(SITE_URI));
+//        Model userModel = JenaConnection.modelMaker().getNamedModel(user.mindMapURIFromSiteURI(BASE));
 //        return new JenaGraphElementManipulator(userModel);
 //    }
 //

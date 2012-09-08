@@ -3,6 +3,7 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
+import org.triple_brain.module.model.TripleBrainUris;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.*;
 import org.triple_brain.module.model.graph.exceptions.InvalidDepthOfSubVerticesException;
@@ -11,7 +12,6 @@ import org.triple_brain.module.model.graph.exceptions.NonExistingResourceExcepti
 import java.io.StringWriter;
 
 import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.SITE_URI;
 /**
  * Copyright Mozilla Public License 1.1
  */
@@ -25,7 +25,7 @@ public class JenaUserGraph implements UserGraph {
     }
 
     protected JenaUserGraph(User user){
-        userModel = modelMaker().getNamedModel(user.mindMapURIFromSiteURI(SITE_URI));
+        userModel = modelMaker().getNamedModel(user.mindMapURIFromSiteURI(TripleBrainUris.BASE));
         TripleBrainModel.withEnglobingModel(userModel).incorporate();
         this.user = user;
     }
@@ -97,7 +97,7 @@ public class JenaUserGraph implements UserGraph {
     @Override
     public Vertex defaultVertex(){
         return JenaVertex.loadUsingResourceOfOwner(
-                userModel.getResource(user.URIFromSiteURI(SITE_URI) + "default"),
+                userModel.getResource(user.URIFromSiteURI(TripleBrainUris.BASE) + "default"),
                 user
         );
     }

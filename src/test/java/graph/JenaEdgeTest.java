@@ -19,26 +19,26 @@ public class JenaEdgeTest extends JenaGeneralGraphManipulatorTest{
         Vertex vertexD = vertexA.addVertexAndRelation().destinationVertex();
         Vertex vertexE = vertexD.addVertexAndRelation().destinationVertex();
 
-        Integer numberOfEdgesAndVertices = graphManipulator.wholeGraph().numberOfEdgesAndVertices();
+        Integer numberOfEdgesAndVertices = userGraph.wholeGraph().numberOfEdgesAndVertices();
         Edge newEdge = vertexE.addRelationToVertex(vertexA);
 
         assertThat(newEdge.sourceVertex(), is(vertexE));
         assertThat(newEdge.destinationVertex(), is(vertexA));
-        assertTrue(graphManipulator.containsElement(newEdge));
+        assertTrue(userGraph.containsElement(newEdge));
         assertThat(newEdge.label(), is(""));
-        assertThat(graphManipulator.numberOfEdgesAndVertices(), is(numberOfEdgesAndVertices + 1));
+        assertThat(userGraph.numberOfEdgesAndVertices(), is(numberOfEdgesAndVertices + 1));
     }
 
     @Test
     public void can_remove_an_edge() {
-        Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer numberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
         Edge edge = vertexA.edgeThatLinksToDestinationVertex(vertexB);
-        assertTrue(graphManipulator.containsElement(edge));
+        assertTrue(userGraph.containsElement(edge));
         edge.remove();
-        assertFalse(graphManipulator.containsElement(edge));
+        assertFalse(userGraph.containsElement(edge));
         assertFalse(vertexA.hasDestinationVertex(vertexB));
 
-        Integer updatedNumberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer updatedNumberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
         assertThat(updatedNumberOfEdgesAndVertices, is(numberOfEdgesAndVertices - 1));
     }
 

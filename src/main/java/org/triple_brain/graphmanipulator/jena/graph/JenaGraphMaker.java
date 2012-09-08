@@ -3,7 +3,7 @@ package org.triple_brain.graphmanipulator.jena.graph;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import org.triple_brain.graphmanipulator.jena.JenaConnection;
-import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
+import org.triple_brain.module.model.TripleBrainUris;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.GraphMaker;
 import org.triple_brain.module.model.graph.UserGraph;
@@ -17,7 +17,7 @@ public class JenaGraphMaker implements GraphMaker {
     @Override
     public UserGraph createForUser(User user) {
         Model model = TDBFactory.createNamedModel(
-                user.mindMapURIFromSiteURI(TripleBrainModel.SITE_URI),
+                user.mindMapURIFromSiteURI(TripleBrainUris.BASE),
                 JenaConnection.ModelsDirectory
         );
         Vertex vertex = createDefaultVertexForUserAndModel(user, model);
@@ -26,7 +26,7 @@ public class JenaGraphMaker implements GraphMaker {
     }
 
     private Vertex createDefaultVertexForUserAndModel(User user, Model model) {
-        String newVertexURI = user.URIFromSiteURI(TripleBrainModel.SITE_URI) + "default";
+        String newVertexURI = user.URIFromSiteURI(TripleBrainUris.BASE) + "default";
         return JenaVertex.createUsingModelUriAndOwner(model, newVertexURI, user);
     }
 }

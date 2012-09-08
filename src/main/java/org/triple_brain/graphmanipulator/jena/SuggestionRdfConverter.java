@@ -5,6 +5,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import org.triple_brain.module.model.Suggestion;
+import org.triple_brain.module.model.TripleBrainUris;
 
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class SuggestionRdfConverter {
         this.model = model;
     }
     public Resource suggestionToRdf(Suggestion suggestion){
-        resource = model.createResource(TripleBrainModel.SITE_URI + "suggestion/" + UUID.randomUUID().toString());
+        resource = model.createResource(TripleBrainUris.BASE+ "suggestion/" + UUID.randomUUID().toString());
         this.suggestion = suggestion;
         addType();
         addDomain();

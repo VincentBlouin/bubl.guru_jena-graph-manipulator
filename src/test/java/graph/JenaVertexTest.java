@@ -1,6 +1,5 @@
 package graph;
 
-import graph.scenarios.TestScenarios;
 import org.junit.Test;
 import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
@@ -24,14 +23,22 @@ import static org.hamcrest.core.Is.is;
 public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
 
     @Test
+    public void can_update_label() {
+        Edge newEdge = vertexA.addVertexAndRelation();
+        Vertex vertex = newEdge.destinationVertex();
+        vertex.label("Ju-Ji-Tsu");
+        assertThat(vertex.label(), is("Ju-Ji-Tsu"));
+    }
+
+    @Test
     public void can_add_vertex_and_relation() {
-        Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer numberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
         Edge edge = vertexA.addVertexAndRelation();
 
         assertThat(edge, is(not(nullValue())));
         assertTrue(edge.hasLabel());
 
-        Integer newNumberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer newNumberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
         assertThat(newNumberOfEdgesAndVertices, is(numberOfEdgesAndVertices + 2));
         assertTrue(vertexA.hasEdge(edge));
 
@@ -44,13 +51,13 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
 
     @Test
     public void can_remove_a_vertex() {
-        Integer numberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer numberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
 
-        assertTrue(graphManipulator.containsElement(vertexB));
+        assertTrue(userGraph.containsElement(vertexB));
         vertexB.remove();
-        assertFalse(graphManipulator.containsElement(vertexB));
+        assertFalse(userGraph.containsElement(vertexB));
 
-        Integer updatedNumberOfEdgesAndVertices = graphManipulator.numberOfEdgesAndVertices();
+        Integer updatedNumberOfEdgesAndVertices = userGraph.numberOfEdgesAndVertices();
         assertThat(updatedNumberOfEdgesAndVertices, is(numberOfEdgesAndVertices - 3));
     }
 
@@ -123,14 +130,6 @@ public class JenaVertexTest extends JenaGeneralGraphManipulatorTest{
                         )
                 )
         );
-    }
-
-    @Test
-    public void can_update_label() {
-        Edge newEdge = vertexA.addVertexAndRelation();
-        Vertex vertex = newEdge.destinationVertex();
-        vertex.label("Ju-Ji-Tsu");
-        assertThat(vertex.label(), is("Ju-Ji-Tsu"));
     }
 
     @Test

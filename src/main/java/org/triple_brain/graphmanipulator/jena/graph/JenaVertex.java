@@ -13,6 +13,7 @@ import org.triple_brain.graphmanipulator.jena.SuggestionRdfConverter;
 import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
 import org.triple_brain.module.model.FriendlyResource;
 import org.triple_brain.module.model.Suggestion;
+import org.triple_brain.module.model.TripleBrainUris;
 import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.Edge;
 import org.triple_brain.module.model.graph.Vertex;
@@ -23,7 +24,6 @@ import java.util.*;
 import static com.hp.hpl.jena.vocabulary.RDF.type;
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
 import static org.triple_brain.graphmanipulator.jena.QueryUtils.*;
-import static org.triple_brain.graphmanipulator.jena.TripleBrainModel.*;
 
 /**
  * Copyright Mozilla Public License 1.1
@@ -134,10 +134,10 @@ public class JenaVertex extends Vertex {
 
     @Override
     public Edge addVertexAndRelation() {
-        String newVertexURI = owner.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
+        String newVertexURI = owner.URIFromSiteURI(TripleBrainUris.BASE) + UUID.randomUUID().toString();
         JenaVertex newVertex = JenaVertex.createUsingModelUriAndOwner(model(), newVertexURI, owner);
 
-        String edgeURI = owner.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString();
+        String edgeURI = owner.URIFromSiteURI(TripleBrainUris.BASE) + UUID.randomUUID().toString();
         JenaEdge edge = JenaEdge.createWithModelUriDestinationVertexAndOwner(
                 model(),
                 edgeURI,
@@ -157,7 +157,7 @@ public class JenaVertex extends Vertex {
     public Edge addRelationToVertex(Vertex destinationVertex) {
         JenaEdge edge = JenaEdge.createWithModelUriDestinationVertexAndOwner(
                 model(),
-                owner.URIFromSiteURI(SITE_URI) + UUID.randomUUID().toString(),
+                owner.URIFromSiteURI(TripleBrainUris.BASE) + UUID.randomUUID().toString(),
                 destinationVertex,
                 owner
         );
@@ -339,7 +339,7 @@ public class JenaVertex extends Vertex {
                 URIForQuery(id()) + " rdf:type ?additional_type . " +
                 "FILTER (" +
                 "?additional_type != " +
-                URIForQuery(TripleBrainModel.TRIPLE_BRAIN_VERTEX_URI) +
+                URIForQuery(TripleBrainUris.TRIPLE_BRAIN_VERTEX) +
                 ")" +
                 "}";
         QueryExecution qe = QueryExecutionFactory.create(query, model());

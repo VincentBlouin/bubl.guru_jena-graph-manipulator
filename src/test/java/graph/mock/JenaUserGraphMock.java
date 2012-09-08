@@ -9,15 +9,15 @@ import org.triple_brain.module.model.graph.SubGraph;
 /**
  * Copyright Mozilla Public License 1.1
  */
-public class JenaGraphManipulatorMock extends JenaUserGraph {
+public class JenaUserGraphMock extends JenaUserGraph {
 
     public static final Integer DEPTH_OF_SUB_VERTICES_COVERING_ALL_GRAPH_VERTICES = 10;
 
-    public static JenaGraphManipulatorMock mockWithUser(User user) throws Exception{
-        return new JenaGraphManipulatorMock(user);
+    public static JenaUserGraphMock mockWithUser(User user) throws Exception{
+        return new JenaUserGraphMock(user);
     }
 
-    private JenaGraphManipulatorMock(User user) throws Exception{
+    private JenaUserGraphMock(User user) throws Exception{
         super(user);
 
     }

@@ -2,7 +2,6 @@ package graph;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import graph.scenarios.TestScenarios;
 import org.triple_brain.graphmanipulator.jena.JenaConnection;
 import org.triple_brain.graphmanipulator.jena.graph.JenaGraphMaker;
 import org.triple_brain.module.model.graph.GraphMaker;
@@ -31,7 +30,6 @@ public class JenaTestModule extends AbstractModule{
 
         bind(GraphMaker.class).to(JenaGraphMaker.class);
 
-        requestInjection(TestScenarios.class);
     }
 
 }
