@@ -54,7 +54,8 @@ public class JenaUserGraph implements UserGraph {
         return subGraph;
     }
 
-    public String toRDFXML() {
+    @Override
+    public String toRdfXml() {
         StringWriter rdfXML = new StringWriter();
         model().write(rdfXML);
         return rdfXML.toString();
@@ -73,8 +74,9 @@ public class JenaUserGraph implements UserGraph {
         return userModel;
     }
 
-    public boolean containsElement(GraphElement graphElement) {
-        Resource resource = model().getResource(graphElement.id());
+    @Override
+    public boolean haveElementWithId(String id) {
+        Resource resource = model().getResource(id);
         return model().containsResource(resource);
     }
 
