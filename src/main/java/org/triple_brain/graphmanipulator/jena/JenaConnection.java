@@ -26,10 +26,13 @@ public class JenaConnection {
     private static ModelMaker modelMaker;
     private static DBConnection dbConnection;
     private static Dataset dataset;
-    public static String ModelsDirectory = "src/main/resources/tdb";
+
+    @Inject
+    @Named("tdb_directory_path")
+    public static String TDBDirectoryPath;
 
     public static Dataset modelMaker(){
-        dataset = TDBFactory.createDataset(ModelsDirectory);
+        dataset = TDBFactory.createDataset(TDBDirectoryPath);
         return dataset;
     }
 
