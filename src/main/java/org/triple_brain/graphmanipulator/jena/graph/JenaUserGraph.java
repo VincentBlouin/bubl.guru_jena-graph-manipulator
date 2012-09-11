@@ -108,9 +108,4 @@ public class JenaUserGraph implements UserGraph {
     public User user() {
         return user;
     }
-
-    @Override
-    public void remove() {
-        model().removeAll();
-    }
 }
