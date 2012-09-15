@@ -4,6 +4,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
+import org.triple_brain.module.model.User;
 import org.triple_brain.module.model.graph.GraphElement;
 
 import static com.hp.hpl.jena.vocabulary.RDFS.label;
@@ -44,6 +45,11 @@ public class JenaGraphElement implements GraphElement {
     @Override
     public boolean hasLabel() {
         return resource.hasProperty(label);
+    }
+
+    @Override
+    public User owner() {
+        return null;
     }
 
     public Resource resourceFromGraphElement(GraphElement graphElement) {

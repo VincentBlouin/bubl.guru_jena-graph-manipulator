@@ -78,6 +78,11 @@ public class JenaEdge extends Edge {
     }
 
     @Override
+    public User owner() {
+        return owner;
+    }
+
+    @Override
     public Vertex sourceVertex() {
         return JenaVertex.loadUsingResourceOfOwner(
                 resource.getModel().

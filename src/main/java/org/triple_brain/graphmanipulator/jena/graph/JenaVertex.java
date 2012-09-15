@@ -424,6 +424,11 @@ public class JenaVertex extends Vertex {
         return graphElement.hasLabel();
     }
 
+    @Override
+    public User owner() {
+        return owner;
+    }
+
     private void copySuggestionsInModel(Model model){
         for(Statement statement : resource.listProperties(
                 graphElement.tripleBrainModel().HAS_SUGGESTION()
