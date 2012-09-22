@@ -109,7 +109,7 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
-    public boolean hasDestinationVertex(Vertex destinationVertex) {
+    public Boolean hasDestinationVertex(Vertex destinationVertex) {
         String query =  TRIPLE_BRAIN_PREFIX +
                 "SELECT ?edge " +
                 "WHERE { " +
