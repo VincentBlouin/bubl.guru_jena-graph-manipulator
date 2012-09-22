@@ -4,7 +4,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import org.triple_brain.module.model.TripleBrainUris;
 import org.triple_brain.module.model.User;
-import org.triple_brain.module.model.graph.GraphMaker;
+import org.triple_brain.module.model.graph.GraphFactory;
 import org.triple_brain.module.model.graph.UserGraph;
 import org.triple_brain.module.model.graph.Vertex;
 
@@ -14,7 +14,7 @@ import javax.inject.Named;
 /*
 * Copyright Mozilla Public License 1.1
 */
-public class JenaGraphMaker implements GraphMaker {
+public class JenaGraphFactory implements GraphFactory {
 
     @Inject
     @Named("tdb_directory_path")
@@ -23,11 +23,16 @@ public class JenaGraphMaker implements GraphMaker {
     @Override
     public UserGraph createForUser(User user) {
         Model model = TDBFactory.createNamedModel(
-                user.mindMapURIFromSiteURI(TripleBrainUris.BASE),
+                user.mindMapUri(),
                 TDBDirectoryPath
         );
         Vertex vertex = createDefaultVertexForUserAndModel(user, model);
         vertex.label("me");
+        return JenaUserGraph.withUser(user);
+    }
+
+    @Override
+    public UserGraph loadForUser(User user) {
         return JenaUserGraph.withUser(user);
     }
 

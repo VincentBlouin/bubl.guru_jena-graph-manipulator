@@ -5,11 +5,15 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import org.triple_brain.graphmanipulator.jena.TripleBrainModel;
 import org.triple_brain.module.model.TripleBrainUris;
 import org.triple_brain.module.model.User;
-import org.triple_brain.module.model.graph.*;
+import org.triple_brain.module.model.graph.Edge;
+import org.triple_brain.module.model.graph.SubGraph;
+import org.triple_brain.module.model.graph.UserGraph;
+import org.triple_brain.module.model.graph.Vertex;
 import org.triple_brain.module.model.graph.exceptions.InvalidDepthOfSubVerticesException;
 import org.triple_brain.module.model.graph.exceptions.NonExistingResourceException;
 
 import java.io.StringWriter;
+import java.net.URI;
 
 import static org.triple_brain.graphmanipulator.jena.JenaConnection.modelMaker;
 /**
@@ -25,7 +29,7 @@ public class JenaUserGraph implements UserGraph {
     }
 
     protected JenaUserGraph(User user){
-        userModel = modelMaker().getNamedModel(user.mindMapURIFromSiteURI(TripleBrainUris.BASE));
+        userModel = modelMaker().getNamedModel(user.mindMapUri());
         TripleBrainModel.withEnglobingModel(userModel).incorporate();
         this.user = user;
     }
@@ -75,23 +79,25 @@ public class JenaUserGraph implements UserGraph {
     }
 
     @Override
-    public boolean haveElementWithId(String id) {
+    public Boolean haveElementWithId(String id) {
         Resource resource = model().getResource(id);
         return model().containsResource(resource);
     }
 
-    public Vertex vertexWithURI(String uri){
-        Resource vertex = model().getResource(uri);
+    @Override
+    public Vertex vertexWithURI(URI uri){
+        Resource vertex = model().getResource(uri.toString());
         if (!model().containsResource(vertex)) {
-            throw new NonExistingResourceException(uri);
+            throw new NonExistingResourceException(uri.toString());
         }
         return JenaVertex.loadUsingResourceOfOwner(vertex, user);
     }
 
-    public Edge edgeWithUri(String uri){
-        Resource edge = model().getResource(uri);
+    @Override
+    public Edge edgeWithUri(URI uri){
+        Resource edge = model().getResource(uri.toString());
         if (!model().containsResource(edge)) {
-            throw new NonExistingResourceException(uri);
+            throw new NonExistingResourceException(uri.toString());
         }
         return JenaEdge.loadWithResourceOfOwner(edge, user);
     }

@@ -250,13 +250,6 @@ public class JenaVertex extends Vertex {
     }
 
     @Override
-    public boolean hasMinNumberOfEdgesFromCenterVertex() {
-        return resource.hasProperty(
-                graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
-        );
-    }
-
-    @Override
     public void hiddenConnectedEdgesLabel(List<String> hiddenEdgeLabel) {
         resource.removeAll(
                 graphElement.tripleBrainModel().LABEL_OF_HIDDEN_EDGES()
